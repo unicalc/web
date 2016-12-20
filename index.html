@@ -1,0 +1,372 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+    <link rel="stylesheet" href="//cdn.webix.com/edge/webix.css" type="text/css">
+    <script src="//cdn.webix.com/edge/webix.js" type="text/javascript"></script>
+    <script src="ruleset.js"></script>
+    </head>
+    <body>
+        <script type="text/javascript" charset="utf-8">
+		function capitalize(s) {
+			return s.charAt(0).toUpperCase() + s.slice(1);
+		};
+
+		// binomial coefficient "n over k"
+		function binomial(n, k) {  
+			var coeff = 1;  
+			for (var x = n-k+1; x <= n; x++) coeff *= x;  
+			for (x = 1; x <= k; x++) coeff /= x;  
+			return coeff;  
+		}
+
+		// returns the probability of k hits with n trials if each try as a chance of p to hit
+		function prob(n,k,p) { return binomial(n,k)*Math.pow(p,k)*Math.pow(1-p, n-k);}
+
+		function chanceOfDamage(attackerHealth, damage, p) {
+			var result = 0;
+			for (var i=0; i<6; ++i) result+=prob(6*attackerHealth,i+6*damage,p);
+			return result;
+		}		
+
+		
+        var attacker={
+			name: '',
+			class: '',
+			attack: {},
+			terrain: {}};
+        var attackerId=null;
+        var defender=attacker;
+		var defenderId=null;
+		var attackerTerrain='';
+		var defenderTerrain='';
+		var damage_dataset = [
+			{ att: 20.5, def: 8.7, dmg: 0 },
+			{ att: 10.3, def: 99.9, dmg: 1 }
+		];			
+       
+        var unitData= [{ id: "1", open:true, value:"Sapiens", data: []},
+                { id:"2", open:true, value: "Khraleans", data:[]},
+                { id:"3", open:true, value:"Titans", data:[]}];
+        unitData.sapiens = unitData[0];
+        unitData.khraleans = unitData[1];
+        unitData.titans = unitData[2];
+        for (var unit in RuleSet.Unit) {
+            var rules=RuleSet.Unit[unit];
+            unitData[rules.race].data.push({id: unit, value: rules.name, open: true});
+        }
+		var terrainData = [];
+		var tList = ["plain", "base", "city", "medical", "forest", "mountain", "desert", "swamp", "abyss", "road", "bridge", "harbor", "water", "reef", "ocean"];
+		for (var i = 0; i<tList.length; ++i) terrainData.push({id: tList[i], value: capitalize(tList[i])});
+        
+        function updateTable() {
+		$$("attHealth").define("max", 10+parseInt($$("attVeteran").getValue()));
+		$$("attHealth").refresh();
+		$$("defHealth").define("max", 10+parseInt($$("defVeteran").getValue()));
+		$$("defHealth").refresh();
+		
+			var table = $$('datatable');
+           /*      var record = table.getItem('class');
+                record.attacker = attacker.class;
+                table.updateItem('class', record);
+                    var record = table.getItem('unit');
+                record.attacker = attacker.name;
+                table.updateItem('unit', record);*/
+				
+			var attAtt = attacker.attack[defender.class];
+			var defAtt = defender.attack[attacker.class];
+			var attDef = attacker.defense;
+			var defDef = defender.defense;
+			
+			
+			var attTerrainValues = attacker.terrain[attackerTerrain];
+			var Aa = parseInt(attAtt);
+			var Ad = parseInt(attDef);
+			var Da = parseInt(defAtt);
+			var Dd = parseInt(defDef);
+			if (attTerrainValues) {
+				var attAttBonus = attTerrainValues[1];
+				var attDefBonus = attTerrainValues[2];
+				if (attAtt) {
+					Aa += attAttBonus;
+					if (attAttBonus > 0) attAtt = attAtt + "+" + attAttBonus;
+					else if (attAttBonus < 0) attAtt = attAtt + "" + attAttBonus;
+					var x = parseInt($$("attVeteran").getValue());
+					if (x) attAtt = attAtt + "+" + x;
+					Aa += x;
+					var x = parseInt($$("attGangup").getValue());
+					if (x) attAtt = attAtt + "+" + x;
+					Aa += x;
+					var x = parseInt($$("attPopup").getValue())*4;
+					if (x) attAtt = attAtt + "+" + x;
+					Aa += x;
+					
+				}
+				if (attDef) {
+					Ad += attDefBonus;
+					if (attDefBonus > 0) attDef = attDef + "+" + attDefBonus;
+					else if (attDefBonus < 0) attDef = attDef + "" + attDefBonus;
+				}
+			} else attAtt = attDef = 'n/a';
+			var defTerrainValues = defender.terrain[defenderTerrain];
+			
+			if (defTerrainValues) {
+				var defAttBonus = defTerrainValues[1];
+				var defDefBonus = defTerrainValues[2];
+				if (defAtt) {
+					Da += defAttBonus;
+					if (defAttBonus > 0) defAtt = defAtt + "+" + defAttBonus;
+					else if (defAttBonus < 0) defAtt = defAtt + "" + defAttBonus;
+					var x = parseInt($$("defVeteran").getValue());
+					if (x) defAtt = defAtt + "+" + x;
+					Da += x;
+				}
+				if (defDef) {
+					Dd += defDefBonus;
+					if (defDefBonus > 0) defDef = defDef + "+" + defDefBonus;
+					else if (defDefBonus < 0) defDef = defDef + "" + defDefBonus;
+				}
+			} else defAtt = defDef = 'n/a';
+			
+			var p1 = Aa ? 0.5 + 0.05 * (Aa-Dd) : 0;
+			p1 = Math.min(Math.max(p1, 0), 1);
+			var p2 = Da ? 0.5 + 0.05 * (Da-Ad) : 0;
+			p2 = Math.min(Math.max(p2, 0), 1);
+			
+			var Ah = parseInt($$('attHealth').getValue());
+			var Dh = parseInt($$('defHealth').getValue());
+			
+
+			damage_dataset = [];			
+			
+			var d1 = 0;
+			var d2 = 0;
+			var dmgLimit = Math.min(Ah, Dh);
+			var coll1=0;
+			var coll2=0;
+			for (var i = 0; i<=dmgLimit; ++i) {
+				var dmg1 = (chanceOfDamage(Ah, i, p1));
+				if (i == Dh) dmg1 = 1-coll1;
+				else if (i > Dh) dmg1 = 0;
+				else coll1 += dmg1;
+				d1 += (i * dmg1);
+				
+				var dmg2 = (chanceOfDamage(Dh, i, p2))*1;
+				if (i == Ah) dmg2 = 1-coll2;
+				else if (i > Ah) dmg2 = 0;
+				else coll2 += dmg2;
+				d2 += (i * dmg2);
+				damage_dataset.push({
+					att: Math.round(dmg1*1000)/10,
+					def: Math.round(dmg2*1000)/10, 
+					dmg: i })
+			}
+
+			d1 = Math.round(d1*10)/10;
+			d2 = Math.round(d2*10)/10;
+           
+            var obj = [
+					{ prop: 'Unit', a: attacker.name, d: defender.name  },
+					{ prop: 'Value', a: attacker.cost, d: defender.cost  },
+					{ prop: 'Class', a: attacker.class, d: defender.class  },
+					{ prop: 'Attack', a: attAtt, d: defAtt  },
+					{ prop: 'Defense', a: attDef, d: defDef  },
+					{ prop: 'p', a: p1, d: p2 },
+					{ prop: 'Inflicted Damage', a: d1, d: d2 },
+					{ prop: 'Remaining Health', a: Math.round((Ah-d2)*10)/10, d: Math.round((Dh-d1)*10)/10 },
+					{ prop: 'Credit loss', a: Math.round(attacker.cost*d2)/10, d: Math.round(defender.cost*d1)/10 },
+				];
+            table.clearAll();
+            table.parse(obj);  
+			$$("chart").clearAll();
+			$$("chart").parse(damage_dataset);
+        }
+        
+    var selectAttacker = {view:"tree",
+            select: 1,
+			width: 300,
+  			id: 'attacker',
+			on: {
+                onSelectChange:function (id) {
+                attackerId = id;
+                attacker = RuleSet.Unit[id];
+				if (attacker.canPopup) $$("attPopup").enable();
+				else {
+					$$("attPopup").disable();
+					$$("attPopup").setValue(0);
+					}
+				var t=$$("attackerTerrain");
+				if (t) {
+					var x = t.getSelectedId();
+					t.clearAll();
+					var d = terrainData.filter(function(value) {
+						return attacker.terrain[value.id]
+					});
+					t.parse(d);
+					if (! attacker.terrain[x] ) x = d[0].id;
+					t.select(x);
+					t.showItem(x);
+				}
+                //updateTable();
+                }
+            },
+			data: {id:"root", value:"Races", open:true, data: unitData}
+        };
+    var selectAttackerTerrain = {view:"grouplist",
+            select: 1,
+  			id: 'attackerTerrain',
+            on: {
+                onSelectChange:function (id) {
+                attackerTerrain = id;
+                updateTable();
+                }
+            },
+            data: {id:"root", value:"Terrain", open:true, data: terrainData}
+        };
+    var selectDefender = {view:"tree",
+            select: 1,
+			width: 300,
+			id: 'defender',
+           on: {
+                onSelectChange:function (id) {
+                defenderId = id;
+                defender = RuleSet.Unit[id];;
+				var t=$$("defenderTerrain");
+				if (t) {
+					var x = t.getSelectedId();
+					t.clearAll();
+					var d = terrainData.filter(function(value) {
+						return defender.terrain[value.id]
+					});
+					t.parse(d);
+					if (! defender.terrain[x] ) x = d[0].id;
+					t.select(x);
+					t.showItem(x);
+				}
+                //updateTable();
+                }
+            },
+            data: {id:"root", value:"Races", open:true, data: JSON.parse(JSON.stringify(unitData))}
+            };
+    var selectDefenderTerrain = {view:"grouplist",
+            select: 1,
+   			id: 'defenderTerrain',
+            on: {
+                onSelectChange:function (id) {
+                defenderTerrain = id;
+                updateTable();
+                }
+            },
+            data: {id:"root", value:"Terrain", open:true, data: JSON.parse(JSON.stringify(terrainData))}
+            };
+			
+			
+        
+    webix.ui({
+		padding: 10,
+		margin: 10,
+        cols: [
+			{rows: [
+				{ template:"Attacker", type:"header" },
+				selectAttacker,
+				{ view:"slider", id: 'attHealth', label:"Health", value:"10", min:1, max: 12, name:"s1", title:webix.template("#value#")},
+				 {view:"radio", id: 'attVeteran', label: 'Veteran', value: '0', options:['0', "1", "2"]},
+				 {view:"radio", id: 'attGangup', label: 'Gangup', value: '0', options:['0', "1", "2", '3']},
+				 {view:"checkbox", id: 'attPopup', label: 'Unbury', value: 0},
+				selectAttackerTerrain]},
+            {
+			rows: [
+				{ template:"Defender", type:"header" },
+				selectDefender,
+				
+				{view:"slider", id: 'defHealth', label:"Health", value:"10", min:1, max: 12, name:"s1", title:webix.template("#value#")},
+				 {view:"radio", id: 'defVeteran', label: 'Veteran', value: '0', options:['0', "1", "2"]},
+				 { view:"label", label: ""},
+				 { view:"label", label: ""},
+				selectDefenderTerrain]},
+			{rows: [
+				{ template:"Result", type:"header" },
+				{view:"datatable", id: 'datatable', 
+					columns:[
+						{ id:"prop",	header:"", 		width:150},
+						{ id:"a",	header:"Attacker",	width:150},
+						{ id:"d",	header:"Defender" , width:150}
+					],
+					autoheight:false,
+					autowidth:true,
+					data: []},
+				{view:"chart",
+					type:"area",
+					id: "chart",
+
+					xAxis:{
+						template:"#dmg#"
+					},
+					yAxis:{
+						start:0,
+						step:10
+					},
+					legend:{
+						values:[{text:"Attacker",color:"#1293f8"},{text:"Defender",color:"#66cc00"}],
+						align:"right",
+						valign:"middle",
+						layout:"y",
+						width: 100,
+						margin: 8
+					},
+					eventRadius: 5,
+					series:[
+						{
+							value:"#att#",
+							alpha: 0.5,
+							color: "#1293f8",
+							item:{
+								borderColor: "#1293f8",
+								color: "#ffffff"
+							},
+							line:{
+								color:"#1293f8",
+								width:3
+							},
+							tooltip:{
+								template:"#att#%"
+							}
+						},
+						{
+							value:"#def#",
+							alpha: 0.5,
+							color: "#66cc00",
+							item:{
+								borderColor: "#66cc00",
+								color: "#ffffff"
+							},
+							line:{
+								color:"#66cc00",
+								width:3
+							},
+							tooltip:{
+								template:"#def#%"
+							}
+						}
+					]/*,
+					data:  multiple_dataset*/
+				}					
+			]}
+		]
+    });        
+	$$('attacker').showItem('marine');
+	$$('attacker').select('marine');
+	$$('attackerTerrain').select('forest');
+	$$('defender').showItem('underling');
+	$$('defender').select('underling');
+	$$('defenderTerrain').select('base');
+	
+	$$("attHealth").attachEvent("onSliderDrag", updateTable);
+	$$("attVeteran").attachEvent("onChange", updateTable);
+	$$("attGangup").attachEvent("onChange", updateTable);
+	$$("attPopup").attachEvent("onChange", updateTable);
+	$$("defHealth").attachEvent("onSliderDrag", updateTable);
+	$$("defVeteran").attachEvent("onChange", updateTable);
+
+        </script>
+    </body>
+</html>
