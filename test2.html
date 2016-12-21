@@ -1,0 +1,317 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+    <link rel="stylesheet" href="http://cdn.webix.com/edge/webix.css" type="text/css">
+    <script src="http://cdn.webix.com/edge/webix.js" type="text/javascript"></script>
+    <script src="ruleset.js"></script>
+    </head>
+    <body>
+        <script type="text/javascript" charset="utf-8">
+		
+		var model = {
+			units: [
+				{ id: 1, rule: RuleSet.Unit.marauder, initialHealth: 10 },
+				{ id: 2, rule: RuleSet.Unit.underling, initialHealth: 10},
+				{ id: 3, rule: RuleSet.Unit.garuda, initialHealth: 10},
+			],
+			battles: [
+				{ attId: 1, defId: 2, attTerrain: 'plain', defTerrain: 'base', attBonus: 0, defBonus: 0 },
+				{ attId: 1, defId: 2, attTerrain: 'plain', defTerrain: 'base', attBonus: 2, defBonus: 0 }
+			]
+		};
+
+		// binomial coefficient "n over k"
+		function binomial(n, k) {  
+			var coeff = 1;  
+			for (var x = n-k+1; x <= n; x++) coeff *= x;  
+			for (x = 1; x <= k; x++) coeff /= x;  
+			return coeff;  
+		}
+
+		// returns the probability of k hits with n trials if each try as a chance of p to hit
+		function prob(n,k,p) { return binomial(n,k)*Math.pow(p,k)*Math.pow(1-p, n-k);}
+
+		function chanceOfDamage(attackerHealth, damage, p) {
+			var result = 0;
+			for (var i=0; i<6; ++i) result+=prob(6*attackerHealth,i+6*damage,p);
+			return result;
+		}		
+
+
+		
+		function processAttack(attacker, attackerTerrain, attackerHealth, attackerBonus, defender, defenderTerrain, defenderHealth, probability) {
+			var Aa = attacker.attack[defender.class];
+			var Dd = defender.defense;
+			var result = [];
+			
+			
+			var attTerrainValues = attacker.terrain[attackerTerrain];
+			var attAttBonus = attTerrainValues[1] + attackerBonus;
+			if (Aa) Aa += attAttBonus ;
+			
+			var defTerrainValues = defender.terrain[defenderTerrain];
+			var defDefBonus = defTerrainValues[2];
+			Dd += defDefBonus;
+			
+			var p1 = Aa ? 0.5 + 0.05 * (Aa-Dd) : 0;
+			p1 = Math.min(Math.max(p1, 0), 1);
+			
+			var dmgLimit = Math.min(attackerHealth, defenderHealth);
+			var coll1=0;
+			for (var i = 0; i<=dmgLimit; ++i) {
+				var dmg1 = (chanceOfDamage(attackerHealth, i, p1));
+				if (i == defenderHealth) dmg1 = 1-coll1;
+				else if (i > defenderHealth) dmg1 = 0;
+				else coll1 += dmg1;
+				result.push(dmg1 * probability);
+			}
+			return result;
+		}
+		
+		function processData() {
+			for (var i=0; i<model.units.length; ++i) {
+				var unit = model.units[i];
+				var hp = [];
+				unit.health = unit.initialHealth;
+				unit.unit = unit.rule.name;
+				for (var j=0; j<unit.health; ++j) hp.push(0);
+				hp.push(1);
+				unit.healthProb=hp;
+			}
+			
+			for (var i=0; i<model.battles.length; ++i) {
+				var battle = model.battles[i];
+				var att = model.units.find(function(unit) { return unit.id == battle.attId });
+				var def = model.units.find(function(unit) { return unit.id == battle.defId });
+				battle.att = battle.attId + ": " + att.unit + '(' + att.health + ')';
+				battle.def = battle.defId + ": " + def.unit + '(' + def.health + ')';
+				battle.attackerDamage = [];
+				battle.defenderDamage = [];
+				for (var j=Math.min(att.initialHealth, def.initialHealth); j>=0; --j) {
+					battle.attackerDamage.push(0);
+					battle.defenderDamage.push(0);
+				}
+
+				var attHp = [];
+				for (var j=0; j<=att.initialHealth; ++j) attHp.push(0);
+				var defHp = [];
+				for (var j=0; j<=def.initialHealth; ++j) defHp.push(0);
+				
+				
+				for (var attH = 0; attH <= att.initialHealth; ++attH) {
+					for (var defH = 0; defH <= def.initialHealth; ++defH) {
+						var prob = att.healthProb[attH] * def.healthProb[defH];
+						var res = processAttack(att.rule, battle.attTerrain, attH, battle.attBonus, def.rule, battle.defTerrain, defH, prob);
+						for (var j=0; j<res.length; ++j) {
+							battle.attackerDamage[j] += res[j];
+							defHp[defH-j]+=res[j];
+						}
+						var res = processAttack(def.rule, battle.defTerrain, defH, battle.defBonus, att.rule, battle.attTerrain, attH, prob);
+						for (var j=0; j<res.length; ++j) {
+							battle.defenderDamage[j] += res[j];
+							attHp[attH-j]+=res[j];
+						}
+					}
+				}
+				att.healthProb=attHp;
+				def.healthProb=defHp;
+				var attH = 0;
+				for (var j = 0; j<attHp.length; ++j) attH += j*attHp[j];
+				var defH = 0;
+				for (var j = 0; j<defHp.length; ++j) defH += j*defHp[j];
+				att.health = Math.round(10*attH)/10;
+				def.health = Math.round(10*defH)/10;
+			}
+		}
+		
+		processData();
+		
+
+		var scenario;
+		function addButtonClicked() {
+			//$$('addButton').hide();
+			//$$('my_pop').show();
+			scenario = 'addUnit';
+		}
+		
+		function removeUnit() {
+			var table = $$('units');
+			var sel = table.getSelectedId();
+			if (!sel) return;
+			var index = model.units.indexOf(table.getItem(sel));
+			if (index > -1) model.units.splice(index, 1);
+			table.remove(sel);
+			processData();
+			table.refresh();
+			$$('battle').refresh();
+			$$('units_attacker').parse(model.units);
+			$$('units_attacker').refresh;
+			$$('units_defender').parse(model.units);
+		
+		}
+
+		function removeBattle() {
+			var table = $$('battle');
+			var sel = table.getSelectedId();
+			if (!sel) return;
+			var index = model.battles.indexOf(table.getItem(sel));
+			if (index > -1) model.battles.splice(index, 1);
+			table.remove(sel);
+			processData();
+			table.refresh();
+			$$('units').refresh();
+		}
+		
+		
+		function addBattleButtonClicked() {
+			var table = $$('battle');
+			var attacker = $$('units').getItem(1);
+			table.add({att: attacker, def: '2: Underling'});
+		}
+		
+		function sparkLineTT(obj, common, value, index){
+			if(value == undefined) return "";
+			return index + ": " + Math.round(value*1000)/10 + "%";
+		}
+        
+		webix.ui({
+			padding: 10,
+			margin: 10,
+			rows: [
+				{ view: 'toolbar', elements: [
+					{ view:'button', value:'+', popup: 'select_unit', click:addButtonClicked, width: 30 },
+					{ id: 'units_remove', view:'button', value:'-', click:	removeUnit, width: 30 },
+				]},
+				{ view: 'datatable', id: 'units', 
+					select: true,
+					tooltip: true,
+					columns:[
+						{ id:'id',				header: '', 		width:30},
+						{ id:'unit',			header: 'Unit',		width:150},
+						{ id:'initialHealth',	header: 'Health',	width:70, 	editor: 'text'},
+						{ id:'healthProb', 		header: 'Chart', 	with: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT},
+						{ id:'health',			header: 'Final Health',	width:70}
+					],
+					autoheight:true,
+					autowidth:true,
+					editable:true,
+					data: model.units},
+				{view: 'toolbar', elements: [
+					{ view:'button', value:'+', popup: 'addBattle', width: 30 },
+					{ view:'button', value:'-', click:	removeBattle, width: 30 },
+				]},
+				{ view: 'datatable', id: 'battle', 
+					select: true,
+					tooltip: true,
+					columns:[
+						{ id:'att',			header: 'Attacker',		width:150},
+						{ id:'attTerrain',	header: 'Terrain',		width:100},
+						{ id:'def',			header: 'Defender',		width:150},
+						{ id:'defTerrain',	header: 'Terrain',		width:100},
+						{ id:'attackerDamage', 		header: 'Attacker', 	with: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT},
+						{ id:'defenderDamage', 		header: 'Defender', 	with: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT}
+						
+					],
+					autoheight:true,
+					autowidth:true,
+					editable:true,
+					data: model.battles}					
+			]
+		});  
+
+		var selected_unit;
+		webix.ui({
+			view:"popup",
+			id: 'select_unit',
+			body:{
+				cols: [
+					{rows: [
+						{ view:'button', value:'M', width: 30, click: function() { selected_unit=RuleSet.Unit.marine}, popup: 'select_health' }
+					]}
+				]
+			}
+		}).hide();		
+
+		webix.ui({
+			view:"popup",
+			id: 'addBattle',
+			body:{
+				cells: [
+					{id: 'pick_attacker', rows: [
+					{template:"Pick Attacker", type:"header"},
+					{view: 'list', id: 'units_attacker', 
+						template: '#id#: #unit# (#health#)',
+						select: true,
+						data: model.units}]},
+					{id: 'pick_defender', rows: [
+					{template:"Pick Defender", type:"header"},
+					{view: 'list', id: 'units_defender', 
+						template: '#id#: #unit# (#health#)',
+						select: true,
+						data: model.units}]}
+						
+				]
+			}}
+		).hide();	
+
+		var new_attacker=1;
+		var new_defender=2;
+		
+		$$("units_attacker").attachEvent("onAfterSelect",function(id){
+			new_attacker = $$("units_attacker").getSelectedItem();
+			$$('pick_defender').show();
+		});		
+		$$("units_defender").attachEvent("onAfterSelect",function(id){
+			new_defender = $$("units_defender").getSelectedItem();
+			$$('addBattle').hide();
+			$$('pick_attacker').show();
+			$$('units_attacker').unselectAll();
+			$$('units_defender').unselectAll();
+		});		
+
+
+		
+		var health;
+		webix.ui({
+			view:"popup",
+			id: 'select_health',
+			body:{
+				rows: [
+					{cols: [
+						{ view:'button', value:'1', width: 30, click: function() { health=1; finish()} },
+						{ view:'button', value:'2', width: 30, click: function() { health=2; finish()} },
+						{ view:'button', value:'3', width: 30, click: function() { health=3; finish()} },
+						{ view:'button', value:'4', width: 30, click: function() { health=4; finish()} },
+					]},
+					{cols: [
+						{ view:'button', value:'5', width: 30, click: function() { health=5; finish()} },
+						{ view:'button', value:'6', width: 30, click: function() { health=6; finish()} },
+						{ view:'button', value:'7', width: 30, click: function() { health=7; finish()} },
+						{ view:'button', value:'8', width: 30, click: function() { health=8; finish()} },
+					]},
+					{cols: [
+						{ view:'button', value:'9', width: 30, click: function() { health=9; finish()} },
+						{ view:'button', value:'10', width: 30, click: function() { health=10; finish()} },
+						{ view:'button', value:'11', width: 30, click: function() { health=11; finish()} },
+						{ view:'button', value:'12', width: 30, click: function() { health=12; finish()} },
+					]}
+				]
+			}
+		}).hide();		
+
+		var unit_counter = 2;
+		function finish() {
+			model.units.push({id: ++unit_counter, unit: selected_unit.name, rule: selected_unit, initialHealth: health});
+			$$('units').clearAll();
+			$$('units').parse(model.units);
+			closeAll();
+		}
+		
+		function closeAll() {
+			$$('select_health').hide();
+			$$('select_unit').hide();
+		}
+		
+        </script>
+    </body>
+</html>
