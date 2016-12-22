@@ -2,6 +2,7 @@
     Unit: {
 	marine: {
         name: 'Marine',
+            image: 'marine.png',
 	    cost: 100,
 	    race: 'sapiens',
 	    mobility: 9,
@@ -35,7 +36,8 @@
 	mecha2: {
         name: 'Mecha 2',
 	    cost: 100,
-	    race: 'sapiens',
+            image: 'mecha_2.png',
+            race: 'sapiens',
 	    cannotBeBuilt: true,
 	    mobility: 8,
 	    vision: 3,
@@ -62,6 +64,7 @@
 	},
 	engineer: {
             name: 'Engineer',
+            image: 'engineer.png',
 	    cost: 200,
 	    race: 'sapiens',
 	    mobility: 6,
@@ -96,7 +99,8 @@
 	},
 	marauder: {
             name: 'Marauder',
-	    cost: 250,
+	    image: 'marauder.png',
+            cost: 250,
 	    race: 'sapiens',
 	    mobility: 12,
 	    vision: 5,
@@ -125,6 +129,7 @@
 	},
 	tank: {
             name: 'Tank',
+            image: 'tank.png',
 	    cost: 400,
 	    race: 'sapiens',
 	    mobility: 8,
@@ -154,6 +159,7 @@
 	},
 	helicopter: {
             name: 'Helicopter',
+            image: 'helicopter.png',
 	    cost: 500,
 	    race: 'sapiens',
 	    mobility: 12,
@@ -187,6 +193,7 @@
 	},
 	battery: {
             name: 'Battery',
+            image: 'battery.png',
 	    cost: 650,
 	    race: 'sapiens',
 	    mobility: 7,
@@ -216,6 +223,7 @@
 	},
 	destroyer: {
             name: 'Destroyer',
+            image: 'destroyer.png',
 	    cost: 800,
 	    race: 'sapiens',
 	    mobility: 12,
@@ -240,6 +248,7 @@
 	},
 	mecha: {
             name: 'Mecha',
+            image: 'mecha.png',
 	    cost: 100,
 	    race: 'titans',
 	    mobility: 7,
@@ -272,6 +281,7 @@
 	},
 	cyberUnderling: {
             name: 'Cyber-Underling',
+            image: 'cyber_underling.png',
 	    cost: 100,
 	    race: 'titans',
 	    cannotBeBuilt: true,
@@ -306,6 +316,7 @@
 	},
 	assimilator: {
             name: 'Assimilator',
+            image: 'assimilator.png',
 	    cost: 200,
 	    race: 'titans',
 	    mobility: 6,
@@ -342,6 +353,7 @@
 	},
 	speeder: {
             name: 'Speeder',
+            image: 'speeder.png',
 	    cost: 250,
 	    race: 'titans',
 	    mobility: 16,
@@ -371,6 +383,7 @@
 	},
 	plasmaTank: {
             name: 'Plasma Tank',
+            image: 'plasma_tank.png',
 	    cost: 500,
 	    race: 'titans',
 	    mobility: 6,
@@ -400,6 +413,7 @@
 	},
 	eclipse: {
             name: 'Eclipse',
+            image: 'eclipse.png',
 	    cost: 400,
 	    race: 'titans',
 	    mobility: 10,
@@ -429,6 +443,7 @@
 	},
 	walker: {
             name: 'Walker',
+            image: 'walker.png',
 	    cost: 750,
 	    race: 'titans',
 	    mobility: 6,
@@ -458,6 +473,7 @@
 	},
 	hydronaut: {
             name: 'Hydronaut',
+            image: 'hydronaut.png',
 	    cost: 800,
 	    race: 'titans',
 	    mobility: 11,
@@ -482,6 +498,7 @@
 	},
 	underling: {
             name: 'Underling',
+	    image: 'underling.png',
 	    cost: 100,
 	    race: 'khraleans',
 	    mobility: 11,
@@ -515,6 +532,7 @@
 	},
 	infectedMarine: {
             name: 'Infected Marine',
+            image: 'infected_marine.png',
 	    cost: 100,
 	    race: 'khraleans',
 	    cannotBeBuilt: true,
@@ -548,6 +566,7 @@
 	},
 	infector: {
             name: 'Infector',
+            image: 'infector.png',
 	    cost: 300,
 	    race: 'khraleans',
 	    mobility: 8,
@@ -584,6 +603,7 @@
 	},
 	swarmer: {
             name: 'Swarmer',
+            image: 'swarmer.png',
 	    cost: 250,
 	    race: 'khraleans',
 	    mobility: 9,
@@ -617,6 +637,7 @@
 	},
 	garuda: {
             name: 'Garuda',
+            image: 'garuda.png',
 	    cost: 350,
 	    race: 'khraleans',
 	    mobility: 12,
@@ -650,6 +671,7 @@
 	},
 	pinzer: {
             name: 'Pinzer',
+            image: 'pinzer.png',
 	    cost: 450,
 	    race: 'khraleans',
 	    mobility: 8,
@@ -679,6 +701,7 @@
 	},
 	wyrm: {
             name: 'Wyrm',
+            image: 'wyrm.png',
 	    cost: 550,
 	    race: 'khraleans',
 	    mobility: 6,
@@ -708,6 +731,7 @@
 	},
 	leviathan: {
             name: 'Leviathan',
+            image: 'leviathan.png',
 	    cost: 600,
 	    race: 'khraleans',
 	    mobility: 11,
