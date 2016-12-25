@@ -3,6 +3,8 @@
     <head>
     <link rel="stylesheet" href="//cdn.webix.com/edge/webix.css" type="text/css">
     <script src="//cdn.webix.com/edge/webix.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="http://cdn.webix.com/edge/webix.css" type="text/css">
+    <script src="http://cdn.webix.com/edge/webix.js" type="text/javascript"></script>
     <script src="ruleset.js"></script>
     </head>
     <body>
@@ -105,6 +107,12 @@
 					Ad += attDefBonus;
 					if (attDefBonus > 0) attDef = attDef + "+" + attDefBonus;
 					else if (attDefBonus < 0) attDef = attDef + "" + attDefBonus;
+					var pierce = defender.armorPiercing[attacker.class];
+					if (pierce) {
+						if (attDefBonus) attDef = '(' + attDef + ')'
+						attDef += ' - '+Math.round(pierce * 100) + '%';
+						Ad *= (1-pierce);
+					}
 				}
 			} else attAtt = attDef = 'n/a';
 			var defTerrainValues = defender.terrain[defenderTerrain];
@@ -112,6 +120,10 @@
 			if (defTerrainValues) {
 				var defAttBonus = defTerrainValues[1];
 				var defDefBonus = defTerrainValues[2];
+				if (attacker.maxRange < defender.minRange || attacker.minRange > defender.maxRange) {
+					Da = 0;
+					defAtt = 'out of range';
+				} else
 				if (defAtt) {
 					Da += defAttBonus;
 					if (defAttBonus > 0) defAtt = defAtt + "+" + defAttBonus;
@@ -124,6 +136,12 @@
 					Dd += defDefBonus;
 					if (defDefBonus > 0) defDef = defDef + "+" + defDefBonus;
 					else if (defDefBonus < 0) defDef = defDef + "" + defDefBonus;
+					var pierce = attacker.armorPiercing[defender.class];
+					if (pierce) {
+						if (defDefBonus) defDef = '(' + defDef + ')'
+						defDef += ' - '+Math.round(pierce * 100) + '%';
+						Dd *= (1-pierce);
+					}
 				}
 			} else defAtt = defDef = 'n/a';
 			
