@@ -1,32 +1,13 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-    <link rel="stylesheet" href="//cdn.webix.com/edge/webix.css" type="text/css">
-    <script src="//cdn.webix.com/edge/webix.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://cdn.webix.com/edge/webix.css" type="text/css">
+    <script src="https://cdn.webix.com/edge/webix.js" type="text/javascript"></script>
     <script src="ruleset.js"></script>
+    <script src="common.js"></script>
     </head>
     <body>
         <script type="text/javascript" charset="utf-8">
-		function capitalize(s) {
-			return s.charAt(0).toUpperCase() + s.slice(1);
-		};
-
-		// binomial coefficient "n over k"
-		function binomial(n, k) {  
-			var coeff = 1;  
-			for (var x = n-k+1; x <= n; x++) coeff *= x;  
-			for (x = 1; x <= k; x++) coeff /= x;  
-			return coeff;  
-		}
-
-		// returns the probability of k hits with n trials if each try as a chance of p to hit
-		function prob(n,k,p) { return binomial(n,k)*Math.pow(p,k)*Math.pow(1-p, n-k);}
-
-		function chanceOfDamage(attackerHealth, damage, p) {
-			var result = 0;
-			for (var i=0; i<6; ++i) result+=prob(6*attackerHealth,i+6*damage,p);
-			return result;
-		}		
 
 		
         var attacker={
@@ -54,9 +35,6 @@
             var rules=RuleSet.Unit[unit];
             unitData[rules.race].data.push({id: unit, value: rules.name, open: true});
         }
-		var terrainData = [];
-		var tList = ["plain", "base", "city", "medical", "forest", "mountain", "desert", "swamp", "abyss", "road", "bridge", "harbor", "water", "reef", "ocean"];
-		for (var i = 0; i<tList.length; ++i) terrainData.push({id: tList[i], value: capitalize(tList[i])});
         
         function updateTable() {
 		$$("attHealth").define("max", 10+parseInt($$("attVeteran").getValue()));
