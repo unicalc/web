@@ -1,4 +1,4 @@
-webix.Touch.limit(true);
+webix.Touch.disable();
 
 function capitalize(s) {
 	return s.charAt(0).toUpperCase() + s.slice(1);
