@@ -1,0 +1,449 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+    <link rel="stylesheet" href="https://cdn.webix.com/edge/webix.css" type="text/css">
+    <script src="https://cdn.webix.com/edge/webix.js" type="text/javascript"></script>
+    <script src="ruleset.js"></script>
+    <script src="common.js"></script>
+    <style>
+        .unit {
+            position: absolute;
+            left: -10px;
+            top: -10px; 
+        }
+        .health {
+            position: absolute;
+            left: 0px;
+            top: 10px;
+            color: white;
+            text-shadow: 0px 0px 2px black;
+        }
+        .loss {
+            position: absolute;
+            right: 0px;
+            top: 10px;
+            color: red;
+            text-shadow: 0px 0px 2px black;
+        }
+        .bonus {
+            position: absolute;
+            top: -25px;
+            right: 0px;
+            color: lightgreen;
+            text-shadow: 0px 0px 2px black;
+        }
+    </style>
+    <title>UniWar Battle Simulation</title>
+    </head>
+    <body>
+        <script type="text/javascript" charset="utf-8">
+		
+		var model = {
+			units: [
+				{ id: 1, rule: RuleSet.Unit.bopper, initialHealth: 10, terrain: 'plain', vet: 0 },
+				{ id: 2, rule: RuleSet.Unit.marauder, initialHealth: 10, terrain: 'forest', vet: 0},
+    
+			],
+			battles: [
+				{ attId: 1, defId: 2, attTerrain: 'forest', defTerrain: 'forest', attBonus: 3, strikeBack: false },
+			]
+		};
+		
+
+		
+		processData();
+		
+
+		function removeUnit() {
+			var table = $$('units');
+			var sel = table.getSelectedId();
+			if (!sel) return;
+			var index = model.units.indexOf(table.getItem(sel));
+			if (index > -1) model.units.splice(index, 1);
+			table.remove(sel);
+			console.log(sel);
+			model.battles = model.battles.filter(function(battle) {return battle.attId != sel.id && battle.defId != sel.id});
+			processData();
+			table.refresh();
+			$$('battle').clearAll();
+			$$('battle').parse(model.battles);
+			$$('units_attacker').clearAll();
+			$$('units_attacker').parse(model.units);
+			$$('units_defender').clearAll();
+			$$('units_defender').parse(model.units);
+		
+		}
+
+		function removeBattle() {
+			var table = $$('battle');
+			var sel = table.getSelectedId();
+			if (!sel) return;
+			var index = model.battles.indexOf(table.getItem(sel));
+			if (index > -1) model.battles.splice(index, 1);
+			table.remove(sel);
+			processData();
+			table.refresh();
+			$$('units').refresh();
+		}
+		
+		
+		function addBattleButtonClicked() {
+			var table = $$('battle');
+			var attacker = $$('units').getItem(1);
+			table.add({att: attacker, def: '2: Underling'});
+		}
+		
+		function sparkLineTT(obj, common, value, index){
+			if(value == undefined) return "";
+			return index + ": " + Math.round(value*1000)/10 + "%";
+		}
+
+		webix.ui({
+			view:"popup",
+			id: 'chartDetail',
+			body:{
+				 view:"chart",
+					type:"line",
+					id: "chart",
+					height: 200,
+					width: 300,
+
+					xAxis:{
+						template:"#key#"
+					},
+					yAxis:{
+						start:0,
+						step:10
+					},
+					eventRadius: 5,
+					
+					series:[
+						{
+							value:"#value#",
+							alpha: 0.5,
+							color: "#1293f8",
+							item:{
+								borderColor: "#1293f8",
+								color: "#ffffff"
+							},
+							label: '#value#%',
+							line:{
+								color:"#1293f8",
+								width:3
+							}
+						}
+					]
+				
+			}}
+		).hide();	
+
+	
+		
+		webix.ui({
+			view:"popup",
+			id: 'lvlEd',
+			body:{rows: [
+				 {view:"radio", id: 'attVeteran', label: 'Veteran', value: '0', options:['0', "1", "2"]},
+				 {view:"radio", id: 'cbattPopup', label: 'Unbury', value: 'no', options: ['no', 'yes']}				
+			]}}
+		).hide();
+	
+		
+		webix.editors.myeditor = webix.extend({
+			focus: function() {},
+			getValue: function() { return this.getInputNode().value },
+                        setValue:function(value){
+				console.log(value);
+				var data=[];
+				for (var i=0; i<value.length; ++i) data.push({key: i, value: Math.round(value[i]*1000)/10});
+				this.getInputNode().clearAll();
+				this.getInputNode().value=value;
+				this.getInputNode().parse(data);
+				this.getPopup().show(this.node);
+		}}, webix.editors.popup);
+
+		webix.editors.levelEd = webix.extend({
+			focus: function() {},
+			getValue: function() { 
+                            var res = parseInt(this.getInputNode().getChildViews()[0].getValue()) + 4*
+				(this.getInputNode().getChildViews()[1].getValue()=='yes'?1:0);
+                            console.log(res);
+			return 	res
+ },
+                        setValue:function(value){
+				console.log(value);
+				var unbury = value > 3;
+				if (unbury) value -= 4;
+				this.getInputNode().getChildViews()[0].setValue(value);
+				this.getInputNode().getChildViews()[1].setValue(unbury?'yes':'no');
+				this.getPopup().show(this.node);
+		}}, webix.editors.popup);
+		
+		webix.ui({  view: 'scrollview', scroll: 'y', body: {
+			padding: 10,
+			margin: 10,
+			rows: [
+				{ view: 'toolbar', elements: [
+					{ view:'button', value:'+', popup: 'add_unit', width: 30 },
+					{ id: 'units_remove', view:'button', value:'-', click:	removeUnit, width: 30 },
+				]},
+				{ view: 'datatable', id: 'units', 
+					select: true,
+					tooltip: true,
+					rowHeight: 80,
+					columns:[
+						{ id:'id',		template: '##id#',		header: 'id', 		width:30},
+						{ id:'unit',		template:"<div style='position:relative'><img src='assets/terrain/#terrain#.png' style='position:absolute;'/><img src='assets/units/#image#' class='unit'/></div>",	
+							header: 'Unit',		width:80, tooltip: '#unit# on #terrain#<br>#bonusText#'},
+						{ id: 'vet', width: 50, header: 'Lvl', template: '#levelText#', editor: 'levelEd', popup: 'lvlEd' },
+						{ id:'initialHealth',	header: 'Health',	width:100, 	editor: 'select', template: '#healthString#', options: [1,2,3,4,5,6,7,8,9,10,11,12] },
+						{ id:'healthProb', 		header: 'Chart', 	editor: 'myeditor', popup: 'chartDetail', width: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT},
+					],
+					autoheight:true,
+					autowidth:true,
+					editable:true,
+					data: model.units},
+				{view: 'toolbar', elements: [
+					{ view:'button', value:'+', popup: 'addBattle', width: 30 },
+					{ view:'button', value:'-', click:	removeBattle, width: 30 },
+				]},
+				{ view: 'datatable', id: 'battle', 
+					select: true,
+					tooltip: true,
+					rowHeight: 80,
+					columns:[
+						{ id:'attId',		template: '##attId#',	header: {text:'Attacker',colspan:2},		width:30},
+						{ id:'attImage',	template:"<div style='position:relative'><img src='assets/terrain/#attTerrain#.png' style='position:absolute;'/><img src='assets/units/#attImg#' class='unit'/><div class='health'>#attHealth#</div><div class='bonus'>#attBonusText#</div><div class='loss'>#attLoss#</div></div>",	tooltip: '#attUnit# (#attHealth#)<br>#attTerrain#',	width:80},
+						{ id:'defId',		template: '##defId#',	header: {text:'Defender',colspan:2},		width:30},
+						{ id:'defImage',	template:"<div style='position:relative'><img src='assets/terrain/#defTerrain#.png' style='position:absolute;'/><img src='assets/units/#defImg#' class='unit'/><div class='health'>#defHealth#</div><div class='loss'>#defLoss#</div></div>",tooltip: '#defUnit# (#defHealth#)<br>#defTerrain#',		width:80},
+						{ id:'strikeBack',	header: 'Strike-back',  template:'{common.checkbox()}', tooltip: false},
+						{ id:'credits',         header: 'Credits',  width: 80},
+						{ id:'attackerDamage', 		header: 'Attacker', 	editor: 'myeditor', popup: 'chartDetail',width: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT},
+						{ id:'defenderDamage', 		header: 'Defender', 	editor: 'myeditor', popup: 'chartDetail',width: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT}
+						
+					],
+					autoheight:true,
+					autowidth:true,
+					editable:true,
+                                        on:{
+                                            onCheck:function(id){
+                                            processData();
+                                            $$('units').refresh();
+                                            $$('battle').refresh();
+                                        }},
+					data: model.battles},
+                                { template: 'Artwork courtesy of UniWar.com' }
+			]}
+		});  
+		
+		
+		
+		$$('battle').attachEvent("onAfterEditStop", function(state, editor, ignoreUpdate){
+			console.log("foo");
+			if(state.value != state.old){
+				webix.message("Cell value was changed")
+			}  
+		});
+		$$('units').attachEvent("onAfterEditStop", function(state, editor, ignoreUpdate){
+			if(state.value != state.old){
+                                    processData();
+                                    $$('units').refresh();
+                                    $$('battle').refresh();
+			}  
+		});
+
+
+		var selected_unit;
+		var selected_terrain;
+		webix.ui({
+			view:"popup",
+			id: 'add_unit',
+			body:{
+				cells: [
+					{id: 'select_unit', 
+					cols: [
+						{id: 'select_sapien', view: 'dataview', height: 350, select: 'true', type: {height: 80, width: 80}, xCount: 2, scroll: false,
+						template: '<img src="assets/units/#image#">',
+						data: [
+							RuleSet.Unit.marine,	RuleSet.Unit.helicopter,
+							RuleSet.Unit.mecha2,	RuleSet.Unit.tank, 
+							RuleSet.Unit.engineer,	RuleSet.Unit.battery,
+							RuleSet.Unit.marauder,	RuleSet.Unit.destroyer,
+							RuleSet.Unit.bopper]},
+						{id: 'select_khralean', view: 'dataview', height: 350, select: 'true', type: {height: 80, width: 80}, xCount: 2, scroll: false,
+						template: '<img src="assets/units/#image#">',
+						data: [
+							RuleSet.Unit.underling, 		RuleSet.Unit.garuda,
+							RuleSet.Unit.infectedMarine, 	RuleSet.Unit.pinzer, 
+							RuleSet.Unit.infector, 			RuleSet.Unit.wyrm, 
+							RuleSet.Unit.swarmer, 			RuleSet.Unit.leviathan,
+							RuleSet.Unit.borfly]},
+						{id: 'select_titan', view: 'dataview', height: 350, select: 'true', type: {height: 80, width: 80}, xCount: 2, scroll: false,
+						template: '<img src="assets/units/#image#">',
+						data: [
+							RuleSet.Unit.mecha, 		RuleSet.Unit.eclipse,
+							RuleSet.Unit.cyberUnderling,RuleSet.Unit.plasmaTank, 
+							RuleSet.Unit.assimilator, 	RuleSet.Unit.walker, 
+							RuleSet.Unit.speeder, 		RuleSet.Unit.hydronaut,
+							RuleSet.Unit.guardian]},
+					]},
+					{id: 'select_health', rows: [
+						{cols: [
+							{ view:'button', value:'1', width: 80, height: 80, click: function() { health=1; $$('select_terrain').show()} },
+							{ view:'button', value:'2', width: 80, height: 80, click: function() { health=2; $$('select_terrain').show()} },
+							{ view:'button', value:'3', width: 80, height: 80, click: function() { health=3; $$('select_terrain').show()} },
+							{ view:'button', value:'4', width: 80, height: 80, click: function() { health=4; $$('select_terrain').show()} },
+						]},
+						{cols: [
+							{ view:'button', value:'5', width: 80, height: 80, click: function() { health=5; $$('select_terrain').show()} },
+							{ view:'button', value:'6', width: 80, height: 80, click: function() { health=6; $$('select_terrain').show()} },
+							{ view:'button', value:'7', width: 80, height: 80, click: function() { health=7; $$('select_terrain').show()} },
+							{ view:'button', value:'8', width: 80, height: 80, click: function() { health=8; $$('select_terrain').show()} },
+						]},
+						{cols: [
+							{ view:'button', value:'9', width: 80, height: 80, click: function() { health=9; $$('select_terrain').show()} },
+							{ view:'button', value:'10', width: 80, height: 80, click: function() { health=10; $$('select_terrain').show()} },
+							{ view:'button', value:'11', width: 80, height: 80, click: function() { health=11; $$('select_terrain').show()} },
+							{ view:'button', value:'12', width: 80, height: 80, click: function() { health=12; $$('select_terrain').show()} },
+						]}
+					]},
+					{id: 'select_terrain', view: 'dataview', height: 350, select: 'true', type: {height: 80, width: 80}, xCount: 4,
+					template: '<img src="assets/terrain/#id#.png">',
+					data: terrainData
+					}
+				]
+			}
+		}).hide();		
+
+		$$("add_unit").attachEvent("onBeforeShow",function(id){
+			$$('select_unit').show();
+		});		
+		$$('select_sapien').attachEvent('onAfterSelect', function(id){
+			selected_unit = $$('select_sapien').getSelectedItem();
+			var t=$$("select_terrain");
+			t.clearAll();
+			var d = terrainData.filter(function(value) {return selected_unit.terrain[value.id]});
+			t.parse(d);
+			$$('select_health').show()
+		});		
+		$$('select_khralean').attachEvent('onAfterSelect', function(id){
+			selected_unit = $$('select_khralean').getSelectedItem();
+			var t=$$("select_terrain");
+			t.clearAll();
+			var d = terrainData.filter(function(value) {return selected_unit.terrain[value.id]});
+			t.parse(d);
+			$$('select_health').show()
+		});		
+		$$('select_titan').attachEvent('onAfterSelect', function(id){
+			selected_unit = $$('select_titan').getSelectedItem();
+			var t=$$("select_terrain");
+			t.clearAll();
+			var d = terrainData.filter(function(value) {return selected_unit.terrain[value.id]});
+			t.parse(d);
+			$$('select_health').show()
+		});		
+		$$('select_terrain').attachEvent('onAfterSelect', function(id){
+			selected_terrain = id;
+			finish();
+		});		
+		
+		webix.ui({
+			view:"popup",
+			id: 'addBattle',
+			body:{
+				cells: [
+					{id: 'pick_attacker', rows: [
+					{template:"Pick Attacker", type:"header"},
+					{view: 'list', id: 'units_attacker', 
+						template: '#id#: #unit# (#health#)',
+						select: true,
+						data: model.units}]},
+					{id: 'pick_gangup', rows: [
+					{template:"Gangup", type:"header"},
+					{view: 'list', id: 'gangup_list', 
+						select: true,
+						template: '#id#',
+						data: [{id: '0'},{id: 1},{id: 2},{id: 3},]}]},
+					{id: 'pick_attacker_terrain', rows: [
+					{template:"Attacker Terrain", type:"header"},
+					{id: 'attacker_terrain', view: 'dataview', height: 350, select: 'true', type: {height: 80, width: 80}, xCount: 4,
+					template: '<img src="assets/terrain/#id#.png">',
+					data: terrainData}]},
+                    {id: 'pick_defender', rows: [
+					{template:"Pick Defender", type:"header"},
+					{view: 'list', id: 'units_defender', 
+						template: '#id#: #unit# (#health#)',
+						select: true,
+						data: model.units}]},
+				]
+			}}
+		).hide();	
+
+		var new_attacker=1;
+		var new_defender=2;
+		
+		$$("addBattle").attachEvent("onBeforeShow",function(id){
+			$$('pick_attacker').show();
+			$$('units_attacker').unselectAll();
+			$$('units_defender').unselectAll();
+			$$('attacker_terrain').unselectAll();
+			$$('gangup_list').unselectAll();
+		});		
+		$$("units_attacker").attachEvent("onAfterSelect",function(id){
+			new_attacker = $$("units_attacker").getSelectedItem();
+			var t=$$("attacker_terrain");
+			t.clearAll();
+			var d = terrainData.filter(function(value) {return new_attacker.rule.terrain[value.id]});
+			t.parse(d);
+			var t=$$("units_defender");
+			t.clearAll();
+			var d = model.units.filter(function(value) {return new_attacker.id != value.id});
+			t.parse(d);
+			$$('pick_gangup').show();
+		});		
+		var gangup = 0;
+		$$("gangup_list").attachEvent("onAfterSelect",function(id){
+			gangup = id;
+			$$('pick_attacker_terrain').show();
+		});		
+		$$("attacker_terrain").attachEvent("onAfterSelect",function(id){
+			
+			$$('pick_defender').show();
+		});		
+		$$("units_defender").attachEvent("onAfterSelect",function(id){
+			new_defender = $$("units_defender").getSelectedItem();
+			var att = new_attacker.rule;
+			var def = new_defender.rule;
+            model.battles.push({ attId: $$("units_attacker").getSelectedItem().id, defId: new_defender.id, 
+				attTerrain: $$("attacker_terrain").getSelectedItem().id, defTerrain: new_defender.terrain, attBonus: parseInt(gangup),
+				strikeBack: (att.minRange >= def.minRange && att.maxRange <= def.maxRange)});
+            processData();
+			$$('units').refresh();
+			$$('battle').clearAll();
+			$$('battle').parse(model.battles);
+			$$('addBattle').hide();
+		});		
+
+
+		
+		var health;
+		var unit_counter = model.units.length;
+		function finish() {
+			model.units.push({id: ++unit_counter, rule: selected_unit, initialHealth: health, terrain: selected_terrain, vet: 0});
+			$$('units').clearAll();
+			$$('units').parse(model.units);
+                        processData();
+			$$('units').refresh();
+			$$('units_attacker').clearAll();
+			$$('units_attacker').parse(model.units);
+			$$('units_defender').clearAll();
+			$$('units_defender').parse(model.units);
+			$$('add_unit').hide();
+			$$('select_unit').show();
+			$$('select_terrain').unselectAll();
+		}
+		
+        </script>
+        
+    </body>
+</html>
