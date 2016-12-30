@@ -36,21 +36,19 @@
             unitData[rules.race].data.push({id: unit, value: rules.name, open: true});
         }
         
-        function updateTable() {
-		$$("attHealth").define("max", 10+parseInt($$("attVeteran").getValue()));
-		$$("attHealth").refresh();
-		$$("defHealth").define("max", 10+parseInt($$("defVeteran").getValue()));
-		$$("defHealth").refresh();
+        
+		function updateTable() {
+			$$("attHealth").define("max", 10+parseInt($$("attVeteran").getValue()));
+			$$("attHealth").refresh();
+			$$("defHealth").define("max", 10+parseInt($$("defVeteran").getValue()));
+			$$("defHealth").refresh();
 		
 			var table = $$('datatable');
-           /*      var record = table.getItem('class');
-                record.attacker = attacker.class;
-                table.updateItem('class', record);
-                    var record = table.getItem('unit');
-                record.attacker = attacker.name;
-                table.updateItem('unit', record);*/
-				
-			var attAtt = attacker.attack[defender.class];
+			
+			
+
+			
+			/*var attAtt = attacker.attack[defender.class];
 			var defAtt = defender.attack[attacker.class];
 			var attDef = attacker.defense;
 			var defDef = defender.defense;
@@ -61,6 +59,7 @@
 			var Ad = parseInt(attDef);
 			var Da = parseInt(defAtt);
 			var Dd = parseInt(defDef);
+			var attackerBonus = 0;
 			if (attTerrainValues) {
 				var attAttBonus = attTerrainValues[1];
 				var attDefBonus = attTerrainValues[2];
@@ -71,13 +70,15 @@
 					var x = parseInt($$("attVeteran").getValue());
 					if (x) attAtt = attAtt + "+" + x;
 					Aa += x;
+					attackerBonus += x;
 					var x = parseInt($$("attGangup").getValue());
 					if (x) attAtt = attAtt + "+" + x;
 					Aa += x;
+					attackerBonus += x;
 					var x = parseInt($$("attPopup").getValue())*4;
 					if (x) attAtt = attAtt + "+" + x;
 					Aa += x;
-					
+					attackerBonus += x;
 				}
 				if (attDef) {
 					Ad += attDefBonus;
@@ -92,7 +93,7 @@
 				}
 			} else attAtt = attDef = 'n/a';
 			var defTerrainValues = defender.terrain[defenderTerrain];
-			
+			var defenderBonus = 0;
 			if (defTerrainValues) {
 				var defAttBonus = defTerrainValues[1];
 				var defDefBonus = defTerrainValues[2];
@@ -107,6 +108,7 @@
 					var x = parseInt($$("defVeteran").getValue());
 					if (x) defAtt = defAtt + "+" + x;
 					Da += x;
+					defenderBonus =+ x;
 				}
 				if (defDef) {
 					Dd += defDefBonus;
@@ -126,12 +128,13 @@
 			var p2 = Da ? 0.5 + 0.05 * (Da-Ad) : 0;
 			p2 = Math.min(Math.max(p2, 0), 1);
 			
-			var Ah = parseInt($$('attHealth').getValue());
-			var Dh = parseInt($$('defHealth').getValue());
-			
 
 			damage_dataset = [];			
+			if (defenderTerrain != '') {
+				result1 = processAttack(attacker, attackerTerrain, Ah, attackerBonus, defender, defenderTerrain, Dh, 1);
 			
+				result2 = processAttack(defender, defenderTerrain, Dh, defenderBonus, attacker, attackerTerrain, Ah, 1);
+			}
 			var d1 = 0;
 			var d2 = 0;
 			var dmgLimit = Math.min(Ah, Dh);
@@ -156,18 +159,47 @@
 			}
 
 			d1 = Math.round(d1*10)/10;
-			d2 = Math.round(d2*10)/10;
-           
+			d2 = Math.round(d2*10)/10;*/
+			if (!defenderTerrain) return;
+			var Ah = parseInt($$('attHealth').getValue());
+			var Dh = parseInt($$('defHealth').getValue());
+			var attBonus = 0;
+			var x = parseInt($$("attGangup").getValue());
+			attBonus += x;
+			var x = parseInt($$("attPopup").getValue())*4;
+			attBonus += x;
+			model = {
+				units: [
+					{ id: 1, rule: attacker, initialHealth: Ah, terrain: attackerTerrain, vet: parseInt($$("attVeteran").getValue())},
+					{ id: 2, rule: defender, initialHealth: Dh, terrain: defenderTerrain, vet: parseInt($$("defVeteran").getValue())},
+				],
+				battles: [
+					{ attId: 1, defId: 2, attTerrain: attackerTerrain, defTerrain: defenderTerrain, attBonus: attBonus, strikeBack: true }
+				]
+			};
+
+			processData();
+			
+			var battle = model.battles[0];
+			damage_dataset = [];			
+			var dmgLimit = Math.min(Ah, Dh);
+			for (var i = 0; i<=dmgLimit; ++i) {
+				damage_dataset.push({
+					att: battle.attackerDamage[i],
+					def: battle.defenderDamage[i], 
+					dmg: i })
+			}
+			
             var obj = [
 					{ prop: 'Unit', a: attacker.name, d: defender.name  },
 					{ prop: 'Value', a: attacker.cost, d: defender.cost  },
 					{ prop: 'Class', a: attacker.class, d: defender.class  },
-					{ prop: 'Attack', a: attAtt, d: defAtt  },
-					{ prop: 'Defense', a: attDef, d: defDef  },
-					{ prop: 'p', a: p1, d: p2 },
-					{ prop: 'Inflicted Damage', a: d1, d: d2 },
-					{ prop: 'Remaining Health', a: Math.round((Ah-d2)*10)/10, d: Math.round((Dh-d1)*10)/10 },
-					{ prop: 'Credit loss', a: Math.round(attacker.cost*d2)/10, d: Math.round(defender.cost*d1)/10 },
+//					{ prop: 'Attack', a: attAtt, d: defAtt  },
+//					{ prop: 'Defense', a: attDef, d: defDef  },
+					{ prop: 'p', a: battle.p1, d: battle.p2 },
+					{ prop: 'Inflicted Damage', a: -battle.defLoss, d: -battle.attLoss },
+					{ prop: 'Remaining Health', a: Math.round((Ah+battle.attLoss)*10)/10, d: Math.round((Dh+battle.defLoss)*10)/10 },
+					{ prop: 'Credit loss', a: Math.round(-attacker.cost*battle.attLoss)/10, d: Math.round(-defender.cost*battle.defLoss)/10 },
 				];
             table.clearAll();
             table.parse(obj);  
@@ -210,7 +242,7 @@
   			id: 'attackerTerrain',
             on: {
                 onSelectChange:function (id) {
-                attackerTerrain = id;
+                attackerTerrain = id[0];
                 updateTable();
                 }
             },
@@ -246,7 +278,7 @@
    			id: 'defenderTerrain',
             on: {
                 onSelectChange:function (id) {
-                defenderTerrain = id;
+                defenderTerrain = id[0];
                 updateTable();
                 }
             },

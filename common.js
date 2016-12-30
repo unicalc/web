@@ -27,15 +27,39 @@ var terrainData = [];
 var tList = ["plain", "base", "city", "medical", "forest", "mountain", "desert", "swamp", "abyss", "road", "bridge", "harbor", "water", "reef", "ocean"];
 for (var i = 0; i<tList.length; ++i) terrainData.push({id: tList[i], value: capitalize(tList[i])});
 
-function processAttack(attacker, attackerTerrain, attackerHealth, attackerBonus, defender, defenderTerrain, defenderHealth, probability) {
-	var Aa = attacker.attack[defender.class];
-	var Dd = defender.defense;
+function processAttack(pValue, attackerHealth, defenderHealth, probability) {
 	var result = [];
-	
-	var attTerrainValues = attacker.terrain[attackerTerrain];
-	var attAttBonus = attTerrainValues[1] + attackerBonus;
-	if (Aa) Aa += attAttBonus ;
-	
+	var dmgLimit = Math.min(attackerHealth, defenderHealth);
+	var coll1=0;
+	for (var i = 0; i<=dmgLimit; ++i) {
+		var dmg1 = (chanceOfDamage(attackerHealth, i, pValue));
+		if (i == defenderHealth) dmg1 = 1-coll1;
+		else if (i > defenderHealth) dmg1 = 0;
+		else coll1 += dmg1;
+		result.push(dmg1 * probability);
+	}
+	return result;
+}
+
+var model = {
+	units: [
+			{ id: 1, rule: RuleSet.Unit.marauder, initialHealth: 10, terrain: 'plain', vet: 1 },
+			{ id: 2, rule: RuleSet.Unit.mecha, initialHealth: 10, terrain: 'base', vet: 2},
+		],
+	battles: [
+			{ attId: 1, defId: 2, attTerrain: 'plain', defTerrain: 'base', attBonus: 0, strikeBack: true }
+		]
+};
+
+function pvalue(attacker, attackerTerrain, attackerBonus, defender, defenderTerrain) {
+
+	var Aa = attacker.attack[defender.class];
+	if (Aa) {
+		var attTerrainValues = attacker.terrain[attackerTerrain];
+		var attAttBonus = attTerrainValues[1] + attackerBonus;
+		Aa += attAttBonus;
+	}
+	var Dd = defender.defense;
 	var defTerrainValues = defender.terrain[defenderTerrain];
 	var defDefBonus = defTerrainValues[2];
 	Dd += defDefBonus;
@@ -44,21 +68,10 @@ function processAttack(attacker, attackerTerrain, attackerHealth, attackerBonus,
 	if (pierce) {
 		Dd *= 1 - pierce;
 	}
-	
 	var p1 = Aa ? 0.5 + 0.05 * (Aa-Dd) : 0;
-	p1 = Math.min(Math.max(p1, 0), 1);
-	
-	var dmgLimit = Math.min(attackerHealth, defenderHealth);
-	var coll1=0;
-	for (var i = 0; i<=dmgLimit; ++i) {
-		var dmg1 = (chanceOfDamage(attackerHealth, i, p1));
-		if (i == defenderHealth) dmg1 = 1-coll1;
-		else if (i > defenderHealth) dmg1 = 0;
-		else coll1 += dmg1;
-		result.push(dmg1 * probability);
-	}
-	return result;
-}
+	return Math.min(Math.max(p1, 0), 1);
+};
+
 
 function processData() {
 	for (var i=0; i<model.units.length; ++i) {
@@ -106,17 +119,21 @@ function processData() {
 		var defHp = [];
 		for (var j=0; j<=def.initialHealth; ++j) defHp.push(0);
 		
+		battle.p1 = pvalue(att.rule, battle.attTerrain, battle.attBonus + att.vet, def.rule, battle.defTerrain);
+		battle.p2 = (battle.strikeBack) ? pvalue(def.rule, battle.defTerrain, def.vet, att.rule, battle.attTerrain) : 0;
+
+
 		
 		for (var attH = 0; attH <= att.initialHealth; ++attH) {
 			for (var defH = 0; defH <= def.initialHealth; ++defH) {
 				var prob = att.healthProb[attH] * def.healthProb[defH];
-				var res = processAttack(att.rule, battle.attTerrain, attH, battle.attBonus + att.vet, def.rule, battle.defTerrain, defH, prob);
+				var res = processAttack(battle.p1, attH, defH, prob);
 				for (var j=0; j<res.length; ++j) {
 					battle.attackerDamage[j] += res[j];
 					defHp[defH-j]+=res[j];
 				}
 				if (battle.strikeBack) {
-					var res = processAttack(def.rule, battle.defTerrain, defH, def.vet, att.rule, battle.attTerrain, attH, prob);
+					var res = processAttack(battle.p2, defH, attH, prob);
 					for (var j=0; j<res.length; ++j) {
 						battle.defenderDamage[j] += res[j];
 						attHp[attH-j]+=res[j];
