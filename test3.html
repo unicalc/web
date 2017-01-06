@@ -40,12 +40,13 @@
 		
 		var model = {
 			units: [
-				{ id: 1, rule: RuleSet.Unit.bopper, initialHealth: 10, terrain: 'plain', vet: 0 },
-				{ id: 2, rule: RuleSet.Unit.marauder, initialHealth: 10, terrain: 'forest', vet: 0},
+				{ id: 1, rule: RuleSet.Unit.underling, initialHealth: 10, terrain: 'base', vet: 0 },
+				{ id: 2, rule: RuleSet.Unit.marauder, initialHealth: 10, terrain: 'plain', vet: 0},
     
 			],
 			battles: [
-				{ attId: 1, defId: 2, attTerrain: 'forest', defTerrain: 'forest', attBonus: 3, strikeBack: false },
+				{ attId: 2, defId: 1, attTerrain: 'plain', defTerrain: 'base', attBonus: 0, strikeBack: true },
+				{ attId: 2, defId: 1, attTerrain: 'plain', defTerrain: 'base', attBonus: 2, strikeBack: true },
 			]
 		};
 		
@@ -316,6 +317,10 @@
 		}).hide();		
 
 		$$("add_unit").attachEvent("onBeforeShow",function(id){
+			$$('select_sapien').unselectAll();
+			$$('select_khralean').unselectAll();
+			$$('select_titan').unselectAll();
+			$$('select_terrain').unselectAll();
 			$$('select_unit').show();
 		});		
 		$$('select_sapien').attachEvent('onAfterSelect', function(id){
@@ -440,7 +445,7 @@
 			$$('units_defender').parse(model.units);
 			$$('add_unit').hide();
 			$$('select_unit').show();
-			$$('select_terrain').unselectAll();
+			$$('select_sapien').unselectAll();
 		}
 		
         </script>

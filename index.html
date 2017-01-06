@@ -185,8 +185,8 @@
 			var dmgLimit = Math.min(Ah, Dh);
 			for (var i = 0; i<=dmgLimit; ++i) {
 				damage_dataset.push({
-					att: battle.attackerDamage[i],
-					def: battle.defenderDamage[i], 
+					att: Math.round(1000*battle.attackerDamage[i]) / 10,
+					def: Math.round(1000*battle.defenderDamage[i]) / 10, 
 					dmg: i })
 			}
 			
