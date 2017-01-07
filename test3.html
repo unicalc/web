@@ -186,7 +186,8 @@
 			rows: [
 				{ view: 'toolbar', elements: [
 					{ view:'button', value:'+', popup: 'add_unit', width: 30 },
-					{ id: 'units_remove', view:'button', value:'-', click:	removeUnit, width: 30 },
+					{ view:'button', value:'-', click:	removeUnit, width: 30 },
+					{ template: 'Setup units for battle' }
 				]},
 				{ view: 'datatable', id: 'units', 
 					select: true,
@@ -196,7 +197,7 @@
 						{ id:'id',		template: '##id#',		header: 'id', 		width:30},
 						{ id:'unit',		template:"<div style='position:relative'><img src='assets/terrain/#terrain#.png' style='position:absolute;'/><img src='assets/units/#image#' class='unit'/></div>",	
 							header: 'Unit',		width:80, tooltip: '#unit# on #terrain#<br>#bonusText#'},
-						{ id: 'vet', width: 50, header: 'Lvl', template: '#levelText#', editor: 'levelEd', popup: 'lvlEd' },
+						{ id: 'vet', width: 50, header: 'Vet', template: '#levelText#', editor: 'levelEd', popup: 'lvlEd' },
 						{ id:'initialHealth',	header: 'Health',	width:100, 	editor: 'select', template: '#healthString#', options: [1,2,3,4,5,6,7,8,9,10,11,12] },
 						{ id:'healthProb', 		header: 'Chart', 	editor: 'myeditor', popup: 'chartDetail', width: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT},
 					],
@@ -207,6 +208,7 @@
 				{view: 'toolbar', elements: [
 					{ view:'button', value:'+', popup: 'addBattle', width: 30 },
 					{ view:'button', value:'-', click:	removeBattle, width: 30 },
+					{ template: 'Setup individual fights' }
 				]},
 				{ view: 'datatable', id: 'battle', 
 					select: true,
@@ -219,8 +221,8 @@
 						{ id:'defImage',	template:"<div style='position:relative'><img src='assets/terrain/#defTerrain#.png' style='position:absolute;'/><img src='assets/units/#defImg#' class='unit'/><div class='health'>#defHealth#</div><div class='loss'>#defLoss#</div></div>",tooltip: '#defUnit# (#defHealth#)<br>#defTerrain#',		width:80},
 						{ id:'strikeBack',	header: 'Strike-back',  template:'{common.checkbox()}', tooltip: false},
 						{ id:'credits',         header: 'Credits',  width: 80},
-						{ id:'attackerDamage', 		header: 'Attacker', 	editor: 'myeditor', popup: 'chartDetail',width: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT},
-						{ id:'defenderDamage', 		header: 'Defender', 	editor: 'myeditor', popup: 'chartDetail',width: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT}
+						{ id:'attackerDamage', 		header: 'Damage done by Attacker', 	editor: 'myeditor', popup: 'chartDetail',width: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT},
+						{ id:'defenderDamage', 		header: 'Damage done by Defender', 	editor: 'myeditor', popup: 'chartDetail',width: 200,  template:'{common.sparklines()}', tooltip: sparkLineTT}
 						
 					],
 					autoheight:true,
@@ -367,8 +369,10 @@
 					{template:"Gangup", type:"header"},
 					{view: 'list', id: 'gangup_list', 
 						select: true,
+						height: 150,
 						template: '#id#',
-						data: [{id: '0'},{id: 1},{id: 2},{id: 3},]}]},
+						data: [{id: '0'},{id: 1},{id: 2},{id: 3},]},
+					{view: 'checkbox', id: 'changeTerrain', value: false, label: 'Pick attacker terrain', labelWidth: 200}]},
 					{id: 'pick_attacker_terrain', rows: [
 					{template:"Attacker Terrain", type:"header"},
 					{id: 'attacker_terrain', view: 'dataview', height: 350, select: 'true', type: {height: 80, width: 80}, xCount: 4,
@@ -393,6 +397,7 @@
 			$$('units_defender').unselectAll();
 			$$('attacker_terrain').unselectAll();
 			$$('gangup_list').unselectAll();
+			$$('changeTerrain').setValue(false);
 		});		
 		$$("units_attacker").attachEvent("onAfterSelect",function(id){
 			new_attacker = $$("units_attacker").getSelectedItem();
@@ -409,10 +414,16 @@
 		var gangup = 0;
 		$$("gangup_list").attachEvent("onAfterSelect",function(id){
 			gangup = id;
-			$$('pick_attacker_terrain').show();
-		});		
+			if ($$('changeTerrain').getValue()) 
+				$$('pick_attacker_terrain').show();
+			else {
+				attackerTerrain = new_attacker.terrain;
+				$$('pick_defender').show();
+			}
+		});
+		var attackerTerrain;
 		$$("attacker_terrain").attachEvent("onAfterSelect",function(id){
-			
+			attackerTerrain = $$("attacker_terrain").getSelectedItem().id;
 			$$('pick_defender').show();
 		});		
 		$$("units_defender").attachEvent("onAfterSelect",function(id){
@@ -420,7 +431,7 @@
 			var att = new_attacker.rule;
 			var def = new_defender.rule;
             model.battles.push({ attId: $$("units_attacker").getSelectedItem().id, defId: new_defender.id, 
-				attTerrain: $$("attacker_terrain").getSelectedItem().id, defTerrain: new_defender.terrain, attBonus: parseInt(gangup),
+				attTerrain: attackerTerrain, defTerrain: new_defender.terrain, attBonus: parseInt(gangup),
 				strikeBack: (att.minRange >= def.minRange && att.maxRange <= def.maxRange)});
             processData();
 			$$('units').refresh();
@@ -449,6 +460,18 @@
 		}
 		
         </script>
+        
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89381145-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+        
         
     </body>
 </html>
