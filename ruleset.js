@@ -143,12 +143,12 @@ bopper = new groundLightUnit(
 	cost: 300,
 	mobility: 7,
 	vision: 3,
-	attack: { GL: 5, GH: 7, AIR: 7, AQUA: 5},
-	armorPiercing: { GL: 0, GH: 0.5, AIR: 0, AQUA: 0.5},
-	minRange: 2,
+	attack: { GL: 3, GH: 5, AIR: 2, AQUA: 5},
+	armorPiercing: { GL: 0, GH: 0.25, AIR: 0.35, AQUA: 0.5},
+	minRange: 3,
 	maxRange: 3,
 	defense: 0,
-	attackAfterMove: false});
+	attackAfterMove: true});
 
 tank = new groundHeavyUnit(
 	{name: 'Tank',
@@ -317,8 +317,8 @@ borfly = new airUnit(
 	cost: 200,
 	mobility: 6,
 	vision: 3,
-	armorPiercing: { GL: 0, GH: 0.5, AIR: 0, AQUA: 0.5},
-	attack: { GL: 4, GH: 6, AIR: 6, AQUA: 4},
+	armorPiercing: { GL: 0, GH: 0.5, AIR: 0.5, AQUA: 0.5},
+	attack: { GL: 4, GH: 6, AIR: 1, AQUA: 4},
 	minRange: 2,
 	maxRange: 3,
 	defense: 2,
