@@ -190,16 +190,26 @@
 					dmg: i })
 			}
 			
+			var attTerrainValues = attacker.terrain[attackerTerrain];
+			var defTerrainValues = defender.terrain[defenderTerrain];
+
             var obj = [
 					{ prop: 'Unit', a: attacker.name, d: defender.name  },
 					{ prop: 'Value', a: attacker.cost, d: defender.cost  },
 					{ prop: 'Class', a: attacker.class, d: defender.class  },
-//					{ prop: 'Attack', a: attAtt, d: defAtt  },
-//					{ prop: 'Defense', a: attDef, d: defDef  },
-					{ prop: 'p', a: battle.p1, d: battle.p2 },
+					{ prop: 'p', a: Math.round(battle.p1*100)/100, d: Math.round(battle.p2*100)/100 },
 					{ prop: 'Inflicted Damage', a: -battle.defLoss, d: -battle.attLoss },
 					{ prop: 'Remaining Health', a: Math.round((Ah+battle.attLoss)*10)/10, d: Math.round((Dh+battle.defLoss)*10)/10 },
 					{ prop: 'Credit loss', a: Math.round(-attacker.cost*battle.attLoss)/10, d: Math.round(-defender.cost*battle.defLoss)/10 },
+					{ prop: 'Terrain effect', a: 
+						'A: ' + (attTerrainValues[1] > 0 ? '+':'') +  attTerrainValues[1] +
+						'  D: ' + (attTerrainValues[2] > 0 ? '+':'') +  attTerrainValues[2],
+					 d: 
+						'A: ' + (defTerrainValues[1] > 0 ? '+':'') +  defTerrainValues[1] +
+						'  D: ' + (defTerrainValues[2] > 0 ? '+':'') +  defTerrainValues[2]},
+					{ prop: 'Attack (w/o bonus)', a: attacker.attack[defender.class], d: defender.attack[attacker.class] },
+					{ prop: 'Armor Piercing', a: attacker.armorPiercing[defender.class], d: defender.armorPiercing[attacker.class] },
+					{ prop: 'Defense', a: attacker.defense, d: defender.defense  }
 				];
             table.clearAll();
             table.parse(obj);  
@@ -314,11 +324,39 @@
 				{view:"datatable", id: 'datatable', 
 					columns:[
 						{ id:"prop",	header:"", 		width:150},
-						{ id:"a",	header:"Attacker",	width:150},
-						{ id:"d",	header:"Defender" , width:150}
+						{ id:"a",	header:"Attacker",	width:150, editor: "text"},
+						{ id:"d",	header:"Defender" , width:150, editor: "text"}
 					],
+					select:"row",
 					autoheight:false,
 					autowidth:true,
+					editable:true,
+					editaction: "custom",
+					on:{
+						onAfterSelect: function (data,prevent) {
+							if (data.column == "prop" || this.getIndexById(data.row) < 8) return;
+							this.editCell(data.row, data.column);
+						},
+						onAfterEditStop: function (state,editor,ignore) {
+							if (state.old == state.value) return;
+							var unit1;
+							var unit2;
+							if (editor.column == "a") { unit1 = attacker; unit2 = defender; }
+							else { unit1=defender; unit2 = attacker; }
+							switch (this.getIndexById(editor.row)) {
+								case 8: // Attack
+									unit1.attack[unit2.class] = parseInt(state.value);
+									break;
+								case 9: // Armor Piercing
+									unit1.armorPiercing[unit2.class] = parseFloat(state.value);
+									break;
+								case 10: // Defense
+									unit1.defense = parseInt(state.value);
+									break;
+							}
+							updateTable();
+						}
+					}, 
 					data: []},
 				{view:"chart",
 					type:"area",
