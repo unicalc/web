@@ -34,7 +34,7 @@ function groundLightUnit(data) {
 		road: [3, 0, -1],
 		city: [5, -2, -2],
 		reef: [6, -2, -3],
-		abyss: [6, -3, -4],
+		chasm: [6, -3, -4],
 		swamp: [6, -1, -2]}
 	importData.call(this, data);
 }
@@ -71,7 +71,7 @@ function airUnit(data) {
 		road: [3, 0, 0],
 		city: [5, -2, -2],
 		reef: [3, 0, 0],
-		abyss: [4, 0, 0],
+		chasm: [4, 0, 0],
 		swamp: [3, 0, 0],
 		water: [3, 0, 0]}
 	importData.call(this, data);
