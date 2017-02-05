@@ -24,7 +24,7 @@ function chanceOfDamage(attackerHealth, damage, p) {
 }		
 
 var terrainData = [];
-var tList = ["plain", "base", "city", "medical", "forest", "mountain", "desert", "swamp", "abyss", "road", "bridge", "harbor", "water", "reef", "ocean"];
+var tList = ["plain", "base", "city", "medical", "forest", "mountain", "desert", "swamp", "chasm", "road", "bridge", "harbor", "water", "reef", "ocean"];
 for (var i = 0; i<tList.length; ++i) terrainData.push({id: tList[i], value: capitalize(tList[i])});
 
 function processAttack(pValue, attackerHealth, defenderHealth, probability) {
