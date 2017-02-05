@@ -126,7 +126,7 @@ marine = new groundLightUnit(
 	cost: 100,
 	mobility: 9,
 	vision: 4,
-	attack: { GL: 6, GH: 3, AIR: 3, AQUA: 2, AMPHI: 0},
+	attack: { GL: 6, GH: 3, AIR: 3, AQUA: 2, AMPHI: 6},
 	defense: 5
 	});
 
@@ -135,7 +135,7 @@ mecha2 = new groundLightUnit(
 	cost: 100,
 	mobility: 8,
 	vision: 3,
-	attack: { GL: 7, GH: 4, AIR: 3, AQUA: 2, AMPHI: 0},
+	attack: { GL: 7, GH: 4, AIR: 3, AQUA: 2, AMPHI: 7},
 	defense: 8,
 	cannotBeBuilt: true
 	});
@@ -155,7 +155,7 @@ marauder = new groundHeavyUnit(
 	cost: 250,
 	mobility: 12,
 	vision: 5,
-	attack: { GL: 8, GH: 4, AIR: 4, AQUA: 4, AMPHI: 0},
+	attack: { GL: 8, GH: 4, AIR: 4, AQUA: 4, AMPHI: 7},
 	defense: 7,
 	actions: 2});
 
@@ -164,7 +164,7 @@ bopper = new groundLightUnit(
 	cost: 300,
 	mobility: 7,
 	vision: 3,
-	attack: { GL: 3, GH: 5, AIR: 2, AQUA: 5, AMPHI: 0},
+	attack: { GL: 3, GH: 5, AIR: 2, AQUA: 5, AMPHI: 3},
 	armorPiercing: { GL: 0, GH: 0.3, AIR: 0.35, AQUA: 0.5, AMPHI: 0},
 	minRange: 3,
 	maxRange: 3,
@@ -176,7 +176,7 @@ tank = new groundHeavyUnit(
 	cost: 400,
 	mobility: 8,
 	vision: 3,
-	attack: { GL: 10, GH: 10, AIR: 0, AQUA: 9, AMPHI: 0},
+	attack: { GL: 10, GH: 10, AIR: 0, AQUA: 9, AMPHI: 10},
 	defense: 13,
 	repair: 2});
 
@@ -185,7 +185,7 @@ helicopter = new airUnit(
 	cost: 500,
 	mobility: 12,
 	vision: 5,
-	attack: { GL: 12, GH: 7, AIR: 9, AQUA: 8, AMPHI: 0},
+	attack: { GL: 12, GH: 7, AIR: 9, AQUA: 8, AMPHI: 12},
 	defense: 10,
 	moveAfterAttack: 6});
 
@@ -194,7 +194,7 @@ battery = new groundHeavyUnit(
 	cost: 650,
 	mobility: 7,
 	vision: 4,
-	attack: { GL: 12, GH: 10, AIR: 12, AQUA: 10, AMPHI: 0},
+	attack: { GL: 12, GH: 10, AIR: 12, AQUA: 10, AMPHI: 12},
 	minRange: 2,
 	maxRange: 4,
 	defense: 4,
@@ -206,7 +206,7 @@ destroyer = new aquaUnit(
 	cost: 800,
 	mobility: 12,
 	vision: 5,
-	attack: { GL: 10, GH: 10, AIR: 12, AQUA: 16, AMPHI: 0},
+	attack: { GL: 10, GH: 10, AIR: 12, AQUA: 16, AMPHI: 10},
 	maxRange: 3,
 	defense: 12,
 	repair: 2});
@@ -226,7 +226,7 @@ mecha = new groundLightUnit(
 	cost: 100,
 	mobility: 7,
 	vision: 4,
-	attack: { GL: 6, GH: 3, AIR: 4, AQUA: 2, AMPHI: 0},
+	attack: { GL: 6, GH: 3, AIR: 4, AQUA: 2, AMPHI: 6},
 	defense: 6});
 
 cyberUnderling = new groundLightUnit(
@@ -236,7 +236,7 @@ cyberUnderling = new groundLightUnit(
 	canPopup: true,
 	mobility: 10,
 	vision: 4,
-	attack: { GL: 7, GH: 4, AIR: 2, AQUA: 2, AMPHI: 0},
+	attack: { GL: 7, GH: 4, AIR: 2, AQUA: 2, AMPHI: 7},
 	defense: 6});
 
 assimilator = new supportUnit( 
@@ -256,7 +256,7 @@ speeder = new groundHeavyUnit(
 	cost: 250,
 	mobility: 16,
 	vision: 5,
-	attack: { GL: 10, GH: 5, AIR: 5, AQUA: 5, AMPHI: 0},
+	attack: { GL: 10, GH: 5, AIR: 5, AQUA: 5, AMPHI: 10},
 	defense: 8,
 	moveAfterAttack: 6,
 	repair: 2});
@@ -266,7 +266,7 @@ guardian = new groundLightUnit(
 	cost: 350,
 	mobility: 10,
 	vision: 2,
-	attack: { GL: 7, GH: 7, AIR: 8, AQUA: 7, AMPHI: 0},
+	attack: { GL: 7, GH: 7, AIR: 8, AQUA: 7, AMPHI: 7},
 	armorPiercing: { GL: 0, GH: 0.45, AIR: 0, AQUA: 0.45, AMPHI: 0},
 	minRange: 1,
 	maxRange: 2,
@@ -278,7 +278,7 @@ plasmaTank = new groundHeavyUnit(
 	cost: 500,
 	mobility: 6,
 	vision: 3,
-	attack: { GL: 10, GH: 11, AIR: 5, AQUA: 11, AMPHI: 0},
+	attack: { GL: 10, GH: 11, AIR: 5, AQUA: 11, AMPHI: 10},
 	defense: 14});
 	
 eclipse = new groundHeavyUnit(
@@ -286,7 +286,7 @@ eclipse = new groundHeavyUnit(
 	cost: 400,
 	mobility: 10,
 	vision: 4,
-	attack: { GL: 10, GH: 4, AIR: 12, AQUA: 9, AMPHI: 0},
+	attack: { GL: 10, GH: 4, AIR: 12, AQUA: 9, AMPHI: 10},
 	minRange: 1,
 	maxRange: 2,
 	defense: 9});
@@ -296,7 +296,7 @@ walker = new groundHeavyUnit(
 	cost: 750,
 	mobility: 6,
 	vision: 5,
-	attack: { GL: 10, GH: 10, AIR: 11, AQUA: 10, AMPHI: 0},
+	attack: { GL: 10, GH: 10, AIR: 11, AQUA: 10, AMPHI: 10},
 	minRange: 3,
 	maxRange: 5,
 	defense: 5,
@@ -307,7 +307,7 @@ hydronaut = new aquaUnit(
 	cost: 800,
 	mobility: 11,
 	vision: 6,
-	attack: { GL: 12, GH: 10, AIR: 12, AQUA: 13, AMPHI: 0},
+	attack: { GL: 12, GH: 10, AIR: 12, AQUA: 13, AMPHI: 12},
 	minRange: 2,
 	maxRange: 4,
 	defense: 10,
@@ -328,7 +328,7 @@ underling = new groundLightUnit(
 	cost: 100,
 	mobility: 11,
 	vision: 3,
-	attack: { GL: 6, GH: 3, AIR: 0, AQUA: 2, AMPHI: 0},
+	attack: { GL: 6, GH: 3, AIR: 0, AQUA: 2, AMPHI: 6},
 	defense: 5,
 	canPopup: true});
 	
@@ -338,7 +338,7 @@ infectedMarine = new groundLightUnit(
 	cannotBeBuilt: true,
 	mobility: 10,
 	vision: 4,
-	attack: { GL: 7, GH: 4, AIR: 4, AQUA: 2, AMPHI: 0},
+	attack: { GL: 7, GH: 4, AIR: 4, AQUA: 2, AMPHI: 7},
 	defense: 6});
 
 infector = new supportUnit(
@@ -358,7 +358,7 @@ borfly = new airUnit(
 	mobility: 6,
 	vision: 3,
 	armorPiercing: { GL: 0, GH: 0.5, AIR: 0.5, AQUA: 0.5, AMPHI: 0},
-	attack: { GL: 4, GH: 6, AIR: 1, AQUA: 4, AMPHI: 0},
+	attack: { GL: 4, GH: 6, AIR: 1, AQUA: 4, AMPHI: 4},
 	minRange: 2,
 	maxRange: 3,
 	defense: 2,
@@ -369,7 +369,7 @@ swarmer = new airUnit(
 	cost: 250,
 	mobility: 9,
 	vision: 5,
-	attack: { GL: 7, GH: 4, AIR: 3, AQUA: 6, AMPHI: 0},
+	attack: { GL: 7, GH: 4, AIR: 3, AQUA: 6, AMPHI: 7},
 	minRange: 1,
 	maxRange: 2,
 	defense: 4});
@@ -379,7 +379,7 @@ garuda = new airUnit(
 	cost: 350,
 	mobility: 12,
 	vision: 5,
-	attack: { GL: 7, GH: 8, AIR: 9, AQUA: 9, AMPHI: 0},
+	attack: { GL: 7, GH: 8, AIR: 9, AQUA: 9, AMPHI: 7},
 	defense: 8,
 	repair: 2});
 
@@ -388,7 +388,7 @@ pinzer = new groundHeavyUnit(
 	cost: 450,
 	mobility: 8,
 	vision: 3,
-	attack: { GL: 12, GH: 10, AIR: 3, AQUA: 10, AMPHI: 0},
+	attack: { GL: 12, GH: 10, AIR: 3, AQUA: 10, AMPHI: 12},
 	defense: 13,
 	repair: 2});
 
@@ -397,7 +397,7 @@ wyrm = new groundHeavyUnit(
 	cost: 550,
 	mobility: 6,
 	vision: 3,
-	attack: { GL: 10, GH: 9, AIR: 12, AQUA: 10, AMPHI: 0},
+	attack: { GL: 10, GH: 9, AIR: 12, AQUA: 10, AMPHI: 10},
 	minRange: 1,
 	maxRange: 3,
 	defense: 4});
@@ -407,7 +407,7 @@ leviathan = new aquaUnit(
 	cost: 600,
 	mobility: 11,
 	vision: 4,
-	attack: { GL: 10, GH: 10, AIR: 9, AQUA: 12, AMPHI: 0},
+	attack: { GL: 10, GH: 10, AIR: 9, AQUA: 12, AMPHI: 10},
 	minRange: 1,
 	maxRange: 3,
 	defense: 12,
