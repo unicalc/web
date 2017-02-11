@@ -67,6 +67,7 @@ function pvalue(attacker, attackerTerrain, attackerBonus, defender, defenderTerr
 	var pierce = attacker.armorPiercing[defender.class];
 	if (pierce) {
 		Dd *= 1 - pierce;
+		Dd = Math.round(Dd);
 	}
 	var p1 = Aa ? 0.5 + 0.05 * (Aa-Dd) : 0;
 	return Math.min(Math.max(p1, 0), 1);
