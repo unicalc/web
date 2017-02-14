@@ -1,0 +1,736 @@
+<html>
+<head>
+<meta name="viewport" content="width=620" />
+<title>UniWar Damage Calculator mobile</title>
+<script src="ruleset.js"></script>
+<script src="common.js"></script>
+
+<style type="text/css">
+html,
+body {
+    position: fixed
+}
+
+div.splitter {
+  position: fixed;
+  top: 0;
+  bottom: 66%
+  left: 50%
+  width: 0;
+}
+
+div.attTitle {
+  position: fixed;
+  font-size: 200%;
+  top: 0;
+  left: 0;
+}
+
+div.defTitle {
+  position: fixed;
+  font-size: 200%;
+  top: 0;
+  right: 0;
+}
+
+
+div.units {
+  position: fixed;
+  top: 60px;
+  width: 240px;
+  bottom: 59%;
+  overflow: auto;
+  white-space: nowrap;
+}
+
+div.unitsDef {
+  position: fixed;
+  right: 0;
+  top: 60px;
+  width: 240px;
+  bottom: 59%;
+  overflow: auto;
+  white-space: nowrap;
+}
+
+div.unitsDef img {
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: FlipH;
+  -ms-filter: "FlipH";
+}
+
+  div.wrapper {
+    width: 240;
+  }
+
+  div.crop {
+    width: 80;
+    height: 80;
+    overflow: hidden;
+    float: left;
+    white-space: nowrap;
+  }
+
+  div.crop img {
+    width: 100;
+    height: 100;
+    margin: -10px 0 0 -10px;
+
+  }
+
+  div.health {
+    position: fixed;
+    font-size: 200%;
+    top: 60px;
+    bottom: 33%;
+    left: 260px;
+    overflow: auto;
+  border-right-style: solid;
+  }
+
+  div.healthDef {
+    position: fixed;
+    font-size: 200%;
+    top: 60px;
+    bottom: 33%;
+    right: 260;
+    overflow: auto;
+  border-left-style: solid;
+  }
+
+  div.health div, div.healthDef div {
+    width: 60;
+    height: 60;
+    text-align: center;
+    margin: 0 0 0 0;
+  }
+
+  div.bonus {
+    position: fixed;
+    font-size: 200%;
+    top: 41%;
+    bottom: 33%;
+    left: 120px;
+    overflow: auto;
+  }
+
+  div.bonusDef {
+    position: fixed;
+    font-size: 200%;
+    top: 41%;
+    bottom: 33%;
+    right: 120;
+    overflow: auto;
+  }
+
+  div.bonus div, div.bonusDef div {
+    width: 120;
+    height: 60;
+    text-align: center;
+    margin: 0 0 0 0;
+  }
+
+  div.terrain {
+    width: 120px;
+    overflow: auto;
+    white-space: nowrap;
+    position: fixed;
+    left: 0;
+    top: 41%;
+    bottom: 33%;
+  }
+
+  div.terrainDef {
+    width: 120px;
+    overflow: auto;
+    white-space: nowrap;
+    position: fixed;
+    right: 0;
+    top: 41%;
+    bottom: 33%;
+  }
+
+  div.terrain div, div.terrainDef div {
+    width: 60;
+    height: 60;
+    float: left;
+  }
+
+
+
+
+@media all and (orientation:portrait) {
+  canvas {
+    position: fixed;
+    left: 0;
+    top: 66%;
+    height: 33%;
+    width: 100%;
+    }
+}
+
+@media all and (orientation:landscape) {
+  canvas {
+    position: fixed;
+    left: 320;
+    right: 320;
+    bottom: 0;
+    height: 40%;
+    }
+}
+
+
+
+</style>
+
+<script>
+var slots={};
+
+function selected_attUnit(div) {
+  console.log(div.getAttribute("unit"));
+  var rule=RuleSet.Unit[div.getAttribute("unit")];
+  model.units[0].rule=rule;
+
+  var div=document.getElementById('attUnbury');
+  if (rule.canPopup) {
+    div.style.display='block'
+  } else {
+    unbury = 0;
+    div.style.backgroundColor="white";
+    div.style.display='none';
+  }
+
+
+  var terraDivs = document.getElementsByClassName('terra');
+  var firstValid = null;
+  var needUpdate = false;
+  for (var i=0; i<terraDivs.length; ++i) {
+    var div=terraDivs[i];
+    if (div.id == '') continue;
+    var terra=div.id.split('_');
+    if (terra[0] != 'attTerrain') continue;
+    if (rule.terrain[terra[1]] === undefined) {
+      if (slots.attTerrain == div) needUpdate = true;
+      div.style.display = 'none';
+    } else {
+      if (!firstValid) firstValid = div;
+      div.style.display = 'block';
+    }
+  }
+
+
+  if (needUpdate) {
+    console.log('need update ' + firstValid);
+    return unitSel(firstValid, 'attTerrain');
+  } else
+
+  updateChart();
+};
+
+function selected_attTerrain(div) {
+  console.log(div.getAttribute("terrain"));
+  model.units[0].terrain=div.getAttribute("terrain");
+  model.battles[0].attTerrain=div.getAttribute("terrain");
+  updateChart();
+};
+
+function selected_attHealth(div) {
+  console.log(div.innerHTML);
+  model.units[0].initialHealth=parseInt(div.innerHTML);
+  updateChart();
+}
+
+function selected_attVet(div) {
+  console.log(div.innerHTML);
+  var level=parseInt(div.id.split('_')[1])
+  model.units[0].vet=level;
+  var div10=document.getElementById('attHealth_10');
+  var div11=document.getElementById('attHealth_11');
+  var div12=document.getElementById('attHealth_12');
+  
+  if (level==0) {
+    div11.style.display='none';
+    div12.style.display='none';
+    if (slots.attHealth == div11 || slots.attHealth == div12) return unitSel(div10, 'attHealth');
+  } else
+  if (level==1) {
+    div11.style.display='block';
+    div12.style.display='none';
+    if (slots.attHealth == div12) return unitSel(div11, 'attHealth');
+  } else
+  if (level==2) {
+    div11.style.display='block';
+    div12.style.display='block';
+  }
+  updateChart();
+}
+
+var gangup=0;
+function selected_attGang(div) {
+  console.log(div.innerHTML);
+  gangup=parseInt(div.id.split('_')[1]);
+  updateChart();
+}
+
+var unbury=0;
+function toggleUnbury() {
+  var div=document.getElementById('attUnbury');
+  unbury = 4-unbury;
+  div.style.backgroundColor=unbury ? "green" : "white";
+  updateChart();
+}
+
+
+function selected_defUnit(div) {
+  console.log(div.getAttribute("unit"));
+  var rule=RuleSet.Unit[div.getAttribute("unit")];
+  model.units[1].rule=rule;
+  var terraDivs = document.getElementsByClassName('terra');
+  var firstValid = null;
+  var needUpdate = false;
+  for (var i=0; i<terraDivs.length; ++i) {
+    var div=terraDivs[i];
+    if (div.id == '') continue;
+    var terra=div.id.split('_');
+    if (terra[0] != 'defTerrain') continue;
+    if (rule.terrain[terra[1]] === undefined) {
+      if (slots.defTerrain == div) needUpdate = true;
+      div.style.display = 'none';
+    } else {
+      if (!firstValid) firstValid = div;
+      div.style.display = 'block';
+    }
+  }
+
+
+  if (needUpdate) {
+    console.log('need update ' + firstValid);
+    return unitSel(firstValid, 'defTerrain');
+  } else
+
+  updateChart();
+  updateChart();
+};
+
+function selected_defHealth(div) {
+  console.log(div.innerHTML);
+  model.units[1].initialHealth=parseInt(div.innerHTML);
+  updateChart();
+}
+
+function selected_defTerrain(div) {
+  console.log(div.getAttribute("terrain"));
+  model.units[1].terrain=div.getAttribute('terrain');
+  model.battles[0].defTerrain=div.getAttribute("terrain");
+  updateChart();
+};
+
+function selected_defVet(div) {
+  console.log(div.innerHTML);
+  var level=parseInt(div.id.split('_')[1])
+  model.units[1].vet=level;
+  var div10=document.getElementById('defHealth_10');
+  var div11=document.getElementById('defHealth_11');
+  var div12=document.getElementById('defHealth_12');
+  
+  if (level==0) {
+    div11.style.display='none';
+    div12.style.display='none';
+    if (slots.defHealth == div11 || slots.defHealth == div12) return unitSel(div10, 'defHealth');
+  } else
+  if (level==1) {
+    div11.style.display='block';
+    div12.style.display='none';
+    if (slots.defHealth == div12) return unitSel(div11, 'defHealth');
+  } else
+  if (level==2) {
+    div11.style.display='block';
+    div12.style.display='block';
+  }
+  updateChart();
+
+}
+
+
+
+function unitSel(div, slot) {
+  if (slots[slot]) slots[slot].style.backgroundColor="white";
+  slots[slot]=div;
+  div.style.backgroundColor=slot.substr(0,3)=="att" ? "green" : "blue";
+  var sel = "selected_"+slot;
+  if (window[sel]) window[sel](div);
+}
+
+
+function renderChart() {
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width, canvas.height);
+  var margin = { top: 40, left: 75, right: 0, bottom: 75 };
+  var xMax = canvas.width - margin.left - margin.right;
+  var yMax = canvas.height - margin.top - margin.bottom;
+
+  var lingrad = ctx.createLinearGradient(margin.left, margin.top, xMax - margin.right, yMax - margin.top);
+  lingrad.addColorStop(0.0, '#D4D4D4');
+  lingrad.addColorStop(0.2, '#fff');
+  lingrad.addColorStop(0.8, '#fff');
+  lingrad.addColorStop(1, '#D4D4D4');
+  ctx.fillStyle = lingrad;
+  ctx.fillRect(margin.left, margin.top, xMax - margin.left, yMax - margin.top);
+  ctx.fillStyle = 'black';
+
+
+  var len = data1.length;
+  if (data2.length>data1.length) len = data2.length;
+  var xf = (xMax-margin.left) / (len-1);
+
+  var maxValue=0;
+  for (var i=0; i<data1.length; ++i) if (maxValue < data1[i]) maxValue=data1[i];
+  for (var i=0; i<data2.length; ++i) if (maxValue < data2[i]) maxValue=data2[i];
+
+//  ctx.lineWidth=1;
+  ctx.strokeStyle = '#bbb';
+  ctx.font = '22pt Calibri';
+  var xpos = margin.left;
+  for (var i=0; i<len; ++i) {
+    ctx.beginPath();
+    ctx.moveTo(xpos, yMax);
+    ctx.lineTo(xpos, margin.top);
+    ctx.stroke();
+    ctx.fillText(i, xpos-10, yMax+25);
+    xpos += xf;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(margin.left, yMax);
+  ctx.lineTo(xMax, yMax);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(margin.left, (margin.top+yMax)/2);
+  ctx.lineTo(xMax, (margin.top+yMax)/2);
+  ctx.stroke();
+  ctx.fillText(Math.round(maxValue*50)+"%", 0, (margin.top+yMax)/2);
+
+
+  ctx.beginPath();
+  ctx.moveTo(margin.left, margin.top);
+  ctx.lineTo(xMax, margin.top);
+  ctx.stroke();
+  ctx.fillText(Math.round(maxValue*100)+"%", 0, margin.top);
+
+  ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+  ctx.font = '20pt Calibri';
+  ctx.beginPath();
+  ctx.moveTo(margin.left, yMax);
+  var xpos = margin.left;
+  for (var i=0; i<data1.length; ++i) {
+    ctx.lineTo(xpos, yMax - data1[i] * (yMax-margin.top) / maxValue);
+    ctx.save();
+    ctx.translate(xpos-10, yMax+60);
+    ctx.rotate(-Math.PI/8);
+    ctx.fillText(Math.round(1000*data1[i])/10, 0,0);
+    ctx.restore();
+    xpos += xf;
+  }
+  ctx.lineTo(xpos-xf, yMax);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(0, 0, 255, 0.5)";
+  ctx.beginPath();
+  ctx.moveTo(margin.left, yMax);
+  var xpos = margin.left;
+  for (var i=0; i<data2.length; ++i) {
+    ctx.lineTo(xpos, yMax - data2[i] * (yMax-margin.top) / maxValue);
+    ctx.save();
+    ctx.translate(xpos-10, canvas.height-10);
+    ctx.rotate(-Math.PI/8);
+    ctx.fillText(Math.round(1000*data2[i])/10, 0,0);
+    ctx.restore();
+    xpos += xf;
+  }
+  ctx.lineTo(xpos-xf, yMax);
+  ctx.closePath();
+  ctx.fill();
+
+
+}
+
+//renderChart();
+
+function updateChart() {
+  model.battles[0].attBonus = gangup +  unbury;
+  processData();
+  data1=model.battles[0].attackerDamage;
+  data2=model.battles[0].defenderDamage;
+  renderChart();
+}
+
+function init() {
+
+
+  var unitDivs = document.getElementsByClassName('crop');
+  for (var i=0; i<unitDivs.length; ++i) {
+    var div=unitDivs[i];
+    if (div.id == '') continue;
+    var unit=div.id.split('_');
+    div.innerHTML='<img src="assets/units/' + RuleSet.Unit[unit[1]].image + '"/>';
+    div.onclick=new Function('unitSel(this, "'+unit[0]+'")');
+    div.setAttribute('unit', unit[1]);
+  }
+
+  var terraDivs = document.getElementsByClassName('terra');
+  for (var i=0; i<terraDivs.length; ++i) {
+    var div=terraDivs[i];
+    if (div.id == '') continue;
+    var terra= div.id.split('_');
+    div.innerHTML='<img src="assets/terrain/' + terra[1] + '.png"/>';
+    div.onclick=new Function('unitSel(this, "'+terra[0]+'")');
+    div.setAttribute('terrain', terra[1]);
+  }
+
+  unitSel(document.getElementById('attUnit_marine'), 'attUnit');
+  unitSel(document.getElementById('attHealth_10'), 'attHealth');
+  unitSel(document.getElementById('attTerrain_plain'), 'attTerrain');
+  unitSel(document.getElementById('attVet_0'), 'attVet');
+  unitSel(document.getElementById('attGang_0'), 'attGang');
+
+  unitSel(document.getElementById('defUnit_mecha'), 'defUnit');
+  unitSel(document.getElementById('defHealth_10'), 'defHealth');
+  unitSel(document.getElementById('defTerrain_base'), 'defTerrain');
+  unitSel(document.getElementById('defVet_0'), 'defVet');
+
+}
+
+function updateOrientation() {
+  var viewport = document.querySelector("meta[name=viewport]");
+  switch (window.orientation) {
+    case 0: //portrait
+      viewport.setAttribute('content', 'width=642')
+      break;
+    case 90: case -90: //landscape
+      viewport.setAttribute('content', 'width=1024');
+      break;
+    default:
+      viewport.setAttribute('content', 'width=642')
+      break;
+  }
+} 
+
+updateOrientation();
+window.addEventListener('orientationchange', updateOrientation, false);
+
+
+</script>
+
+</head>
+<body onload="updateChart()">
+<div class="attTitle">Attacker</div>
+<div class="defTitle">Defender</div>
+<div class="units">
+  <div class="wrapper">
+    <div class="crop" id="attUnit_marine"></div>
+    <div class="crop" id="attUnit_mecha"></div>
+    <div class="crop" id="attUnit_underling"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_mecha2"></div>
+    <div class="crop" id="attUnit_cyberUnderling"></div>
+    <div class="crop" id="attUnit_infectedMarine"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_engineer"></div>
+    <div class="crop" id="attUnit_assimilator"></div>
+    <div class="crop" id="attUnit_infector"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_fuze"></div>
+    <div class="crop" id="attUnit_mantisse"></div>
+    <div class="crop" id="attUnit_salamander"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_bopper"></div>
+    <div class="crop" id="attUnit_guardian"></div>
+    <div class="crop" id="attUnit_borfly"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_marauder"></div>
+    <div class="crop" id="attUnit_speeder"></div>
+    <div class="crop" id="attUnit_swarmer"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_helicopter"></div>
+    <div class="crop" id="attUnit_garuda"></div>
+    <div class="crop" id="attUnit_eclipse"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_tank"></div>
+    <div class="crop" id="attUnit_plasmaTank"></div>
+    <div class="crop" id="attUnit_pinzer"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_battery"></div>
+    <div class="crop" id="attUnit_walker"></div>
+    <div class="crop" id="attUnit_wyrm"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_destroyer"></div>
+    <div class="crop" id="attUnit_hydronaut"></div>
+    <div class="crop" id="attUnit_leviathan"></div>
+  </div>
+</div>
+
+<div class="health">
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_1">1</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_2">2</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_3">3</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_4">4</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_5">5</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_6">6</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_7">7</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_8">8</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_9">9</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_10">10</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_11">11</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_12">12</div>
+</div>
+
+<div class="terrain">
+  <div class="terra" id="attTerrain_plain"></div>
+  <div class="terra" id="attTerrain_base"></div>
+  <div class="terra" id="attTerrain_city"></div>
+  <div class="terra" id="attTerrain_forest"></div>
+  <div class="terra" id="attTerrain_swamp"></div>
+  <div class="terra" id="attTerrain_desert"></div>
+  <div class="terra" id="attTerrain_mountain"></div>
+  <div class="terra" id="attTerrain_medical"></div>
+  <div class="terra" id="attTerrain_road"></div>
+  <div class="terra" id="attTerrain_bridge"></div>
+  <div class="terra" id="attTerrain_harbor"></div>
+  <div class="terra" id="attTerrain_reef"></div>
+  <div class="terra" id="attTerrain_water"></div>
+  <div class="terra" id="attTerrain_ocean"></div>
+  <div class="terra" id="attTerrain_chasm"></div>
+</div>
+
+<div class="bonus">
+  <div onclick="toggleUnbury()" id="attUnbury">unbury</div>
+  <div onclick="unitSel(this, 'attVet')" id="attVet_0">Vet 0</div>
+  <div onclick="unitSel(this, 'attVet')" id="attVet_1">Vet 1</div>
+  <div onclick="unitSel(this, 'attVet')" id="attVet_2">Vet 2</div>
+  <div onclick="unitSel(this, 'attGang')" id="attGang_0">+0</div>
+  <div onclick="unitSel(this, 'attGang')" id="attGang_1">+1</div>
+  <div onclick="unitSel(this, 'attGang')" id="attGang_2">+2</div>
+  <div onclick="unitSel(this, 'attGang')" id="attGang_3">+3</div>
+</div>
+
+<div class="bonusDef">
+  <div onclick="unitSel(this, 'defVet')" id="defVet_0">Vet 0</div>
+  <div onclick="unitSel(this, 'defVet')" id="defVet_1">Vet 1</div>
+  <div onclick="unitSel(this, 'defVet')" id="defVet_2">Vet 2</div>
+</div>
+
+
+<div class="terrainDef">
+  <div class="terra" id="defTerrain_plain"></div>
+  <div class="terra" id="defTerrain_base"></div>
+  <div class="terra" id="defTerrain_city"></div>
+  <div class="terra" id="defTerrain_forest"></div>
+  <div class="terra" id="defTerrain_swamp"></div>
+  <div class="terra" id="defTerrain_desert"></div>
+  <div class="terra" id="defTerrain_mountain"></div>
+  <div class="terra" id="defTerrain_medical"></div>
+  <div class="terra" id="defTerrain_road"></div>
+  <div class="terra" id="defTerrain_bridge"></div>
+  <div class="terra" id="defTerrain_harbor"></div>
+  <div class="terra" id="defTerrain_reef"></div>
+  <div class="terra" id="defTerrain_water"></div>
+  <div class="terra" id="defTerrain_ocean"></div>
+  <div class="terra" id="defTerrain_chasm"></div>
+</div>
+
+
+<div class="healthDef">
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_1">1</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_2">2</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_3">3</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_4">4</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_5">5</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_6">6</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_7">7</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_8">8</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_9">9</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_10">10</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_11">11</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_12">12</div>
+</div>
+
+
+
+<div class="unitsDef">
+  <div class="wrapper">
+    <div class="crop" id="defUnit_marine"></div>
+    <div class="crop" id="defUnit_mecha"></div>
+    <div class="crop" id="defUnit_underling"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_mecha2"></div>
+    <div class="crop" id="defUnit_cyberUnderling"></div>
+    <div class="crop" id="defUnit_infectedMarine"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_engineer"></div>
+    <div class="crop" id="defUnit_assimilator"></div>
+    <div class="crop" id="defUnit_infector"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_fuze"></div>
+    <div class="crop" id="defUnit_mantisse"></div>
+    <div class="crop" id="defUnit_salamander"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_bopper"></div>
+    <div class="crop" id="defUnit_guardian"></div>
+    <div class="crop" id="defUnit_borfly"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_marauder"></div>
+    <div class="crop" id="defUnit_speeder"></div>
+    <div class="crop" id="defUnit_swarmer"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_helicopter"></div>
+    <div class="crop" id="defUnit_garuda"></div>
+    <div class="crop" id="defUnit_eclipse"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_tank"></div>
+    <div class="crop" id="defUnit_plasmaTank"></div>
+    <div class="crop" id="defUnit_pinzer"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_battery"></div>
+    <div class="crop" id="defUnit_walker"></div>
+    <div class="crop" id="defUnit_wyrm"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_destroyer"></div>
+    <div class="crop" id="defUnit_hydronaut"></div>
+    <div class="crop" id="defUnit_leviathan"></div>
+  </div>
+</div>
+
+<div class="splitter"></div>
+
+
+<canvas id="canvas" width="800" height="400"></canvas>
+
+<script>init();
+</script>
+
+
+</body>
