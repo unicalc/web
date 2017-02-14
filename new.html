@@ -11,20 +11,35 @@ body {
     position: fixed
 }
 
-div.splitter {
-  position: fixed;
-  top: 0;
-  bottom: 66%
-  left: 50%
-  width: 0;
-}
-
 div.attTitle {
   position: fixed;
   font-size: 200%;
   top: 0;
   left: 0;
 }
+
+div.hint {
+    -moz-animation: cssAnimation 3s ease-in 3s forwards;
+    -webkit-animation: cssAnimation 3s ease-in 3s forwards;
+    -o-animation: cssAnimation 3s ease-in 3s forwards;
+    animation: cssAnimation 3s ease-in 3s forwards;
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+}
+@keyframes cssAnimation {
+    to {
+       opacity: 0;
+    }
+}
+@-webkit-keyframes cssAnimation {
+    to {
+       opacity: 0;
+    }
+}
+
+
+
+
 
 div.defTitle {
   position: fixed;
@@ -38,9 +53,9 @@ div.units {
   position: fixed;
   top: 60px;
   width: 240px;
-  bottom: 59%;
   overflow: auto;
   white-space: nowrap;
+  margin-bottom: 5;
 }
 
 div.unitsDef {
@@ -48,9 +63,9 @@ div.unitsDef {
   right: 0;
   top: 60px;
   width: 240px;
-  bottom: 59%;
   overflow: auto;
   white-space: nowrap;
+  margin-bottom: 5;
 }
 
 div.unitsDef img {
@@ -85,20 +100,20 @@ div.unitsDef img {
     position: fixed;
     font-size: 200%;
     top: 60px;
-    bottom: 33%;
     left: 260px;
     overflow: auto;
-  border-right-style: solid;
+    border-right-style: solid;
+    margin-right: 5;
   }
 
   div.healthDef {
     position: fixed;
     font-size: 200%;
     top: 60px;
-    bottom: 33%;
     right: 260;
     overflow: auto;
-  border-left-style: solid;
+    border-left-style: solid;
+    margin-left: 5;
   }
 
   div.health div, div.healthDef div {
@@ -111,19 +126,17 @@ div.unitsDef img {
   div.bonus {
     position: fixed;
     font-size: 200%;
-    top: 41%;
-    bottom: 33%;
     left: 120px;
     overflow: auto;
+    margin-left: 5;
   }
 
   div.bonusDef {
     position: fixed;
     font-size: 200%;
-    top: 41%;
-    bottom: 33%;
     right: 120;
     overflow: auto;
+    margin-right: 5;
   }
 
   div.bonus div, div.bonusDef div {
@@ -139,8 +152,6 @@ div.unitsDef img {
     white-space: nowrap;
     position: fixed;
     left: 0;
-    top: 41%;
-    bottom: 33%;
   }
 
   div.terrainDef {
@@ -149,8 +160,6 @@ div.unitsDef img {
     white-space: nowrap;
     position: fixed;
     right: 0;
-    top: 41%;
-    bottom: 33%;
   }
 
   div.terrain div, div.terrainDef div {
@@ -159,27 +168,112 @@ div.unitsDef img {
     float: left;
   }
 
+table.results {
+  width: 100%;
+  height: 100%;
+}
 
+td {
+  text-align: right;
+}
 
 
 @media all and (orientation:portrait) {
+  div.units, div.unitsDef {
+    bottom: 59%;
+  }
+
+  div.terrain, div.terrainDef {
+    top: 41%;
+    bottom: 33%;
+  }
+
+  div.bonus, div.bonusDef {
+    top: 41%;
+    bottom: 33%;
+  }
+
+  div.health, div.healthDef {
+    bottom: 33%;
+  }
+
+
   canvas {
     position: fixed;
     left: 0;
     top: 66%;
     height: 33%;
     width: 100%;
+    background-color: white;
     }
+
+  div.results {
+    position: fixed;
+    left: 0;
+    top: 66%;
+    height: 33%;
+    width: 100%;
+    background-color: white;
+    z-index: -1;
+    }
+
+  div.hint {
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 80%;
+    height: 33%;
+    width: 100%;
+    z-index: 0.5;
+    font-size: 200%;
+    text-align: center;
+    }
+
 }
 
 @media all and (orientation:landscape) {
+  div.units, div.unitsDef {
+    bottom: 30%;
+  }
+
+  div.terrain, div.terrainDef {
+    top: 70%;
+    bottom: 0;
+  }
+
+  div.bonus, div.bonusDef {
+    top: 70%;
+    bottom: 0;
+  }
+
+  div.health, div.healthDef {
+    bottom: 0;
+  }
+
+
   canvas {
     position: fixed;
     left: 320;
     right: 320;
     bottom: 0;
     height: 40%;
+    background-color: white;
     }
+
+  div.results {
+    position: fixed;
+    left: 320;
+    right: 320;
+    top: 0;
+    height: 60%;
+    background-color: white;
+    z-index: -1;
+    }
+
+  div.hint {
+    display: none;
+  }
+
 }
 
 
@@ -464,10 +558,47 @@ function renderChart() {
 
 function updateChart() {
   model.battles[0].attBonus = gangup +  unbury;
+
+  var battle = model.battles[0];
+  var attacker = model.units[0];
+  var defender = model.units[1];
+  var attTerrainValues = attacker.rule.terrain[battle.attTerrain];
+  var defTerrainValues = defender.rule.terrain[battle.defTerrain];
+
+  battle.strikeBack = defender.rule.minRange <= attacker.rule.maxRange && defender.rule.maxRange >= attacker.rule.minRange;
+
   processData();
   data1=model.battles[0].attackerDamage;
   data2=model.battles[0].defenderDamage;
   renderChart();
+
+
+  var battle = model.battles[0];
+  var attacker = model.units[0];
+  var defender = model.units[1];
+  var attTerrainValues = attacker.rule.terrain[battle.attTerrain];
+  var defTerrainValues = defender.rule.terrain[battle.defTerrain];
+
+
+  document.getElementById('t11').innerHTML=attacker.rule.name + ' (' + attacker.rule.class + ')';
+  document.getElementById('t12').innerHTML=defender.rule.name + ' (' + defender.rule.class + ')';
+  document.getElementById('t21').innerHTML=attacker.rule.cost;
+  document.getElementById('t22').innerHTML=defender.rule.cost;
+  document.getElementById('t31').innerHTML=-battle.defLoss;
+  document.getElementById('t32').innerHTML=battle.strikeBack ? -battle.attLoss : 'out of range';
+  document.getElementById('t41').innerHTML=attacker.health;
+  document.getElementById('t42').innerHTML=defender.health;
+  document.getElementById('t51').innerHTML=Math.round(-attacker.rule.cost*battle.attLoss)/10;
+  document.getElementById('t52').innerHTML=Math.round(-defender.rule.cost*battle.defLoss)/10;
+  document.getElementById('t61').innerHTML=attacker.rule.attack[defender.rule.class] + '/' + attacker.rule.defense;
+  document.getElementById('t62').innerHTML=defender.rule.attack[attacker.rule.class] + '/' + defender.rule.defense;
+  document.getElementById('t71').innerHTML='A: ' + (attTerrainValues[1] > 0 ? '+':'') +  attTerrainValues[1] + '  D: ' + (attTerrainValues[2] > 0 ? '+':'') +  attTerrainValues[2];
+  document.getElementById('t72').innerHTML='A: ' + (defTerrainValues[1] > 0 ? '+':'') +  defTerrainValues[1] + '  D: ' + (defTerrainValues[2] > 0 ? '+':'') +  defTerrainValues[2];
+  document.getElementById('t81').innerHTML=Math.round(1000*attacker.rule.armorPiercing[defender.rule.class])/10 + '%';
+  document.getElementById('t82').innerHTML=Math.round(1000*defender.rule.armorPiercing[attacker.rule.class])/10 + '%';
+  document.getElementById('t91').innerHTML=Math.round(battle.p1*100)/100;
+  document.getElementById('t92').innerHTML=Math.round(battle.p2*100)/100;
+    
 }
 
 function init() {
@@ -564,8 +695,8 @@ window.addEventListener('orientationchange', updateOrientation, false);
   </div>
   <div class="wrapper">
     <div class="crop" id="attUnit_helicopter"></div>
-    <div class="crop" id="attUnit_garuda"></div>
     <div class="crop" id="attUnit_eclipse"></div>
+    <div class="crop" id="attUnit_garuda"></div>
   </div>
   <div class="wrapper">
     <div class="crop" id="attUnit_tank"></div>
@@ -704,8 +835,8 @@ window.addEventListener('orientationchange', updateOrientation, false);
   </div>
   <div class="wrapper">
     <div class="crop" id="defUnit_helicopter"></div>
-    <div class="crop" id="defUnit_garuda"></div>
     <div class="crop" id="defUnit_eclipse"></div>
+    <div class="crop" id="defUnit_garuda"></div>
   </div>
   <div class="wrapper">
     <div class="crop" id="defUnit_tank"></div>
@@ -724,12 +855,35 @@ window.addEventListener('orientationchange', updateOrientation, false);
   </div>
 </div>
 
-<div class="splitter"></div>
 
+<canvas id="canvas" width="800" height="400" onclick="document.getElementById('resultDiv').style.zIndex=1"></canvas>
+<div class="hint">tap to show details</div>
+<div class="results" id="resultDiv"  onclick="document.getElementById('resultDiv').style.zIndex=-1">
 
-<canvas id="canvas" width="800" height="400"></canvas>
+<table border class="results">
+<tr><th></th><th id="t11">Attacker</th><th id="t12">Defender</th></tr>
+<tr><th>Cost</th><td id="t21"></td><td id="t22"></td></tr>
+<tr><th>Inflicted Damage</th><td id="t31"></td><td id="t32"></td></tr>
+<tr><th>Remaining Health</th><td id="t41"></td><td id="t42"></td></tr>
+<tr><th>Credit Loss</th><td id="t51"></td><td id="t52"></td></tr>
+<tr><th>Attack / Defense</th><td id="t61"></td><td id="t62"></td></tr>
+<tr><th>Terrain Effect</th><td id="t71"></td><td id="t72"></td></tr>
+<tr><th>Armor Piercing</th><td id="t81"></td><td id="t82"></td></tr>
+<tr><th>p-Value</th><td id="t91"></td><td id="t92"></td></tr>
+</table>
+</div>
+
 
 <script>init();
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89381145-1', 'auto');
+  ga('send', 'pageview');
+
+
 </script>
 
 
