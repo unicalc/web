@@ -162,10 +162,11 @@ div.unitsDef img {
     right: 0;
   }
 
-  div.terrain div, div.terrainDef div {
+  div.terra {
     width: 60;
     height: 60;
     float: left;
+    position: relative;
   }
 
 table.results {
@@ -175,6 +176,42 @@ table.results {
 
 td {
   text-align: right;
+}
+
+img.gray {
+    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);
+}
+
+div.terra img {
+  position: absolute;
+  left: 0;
+}
+
+div.tatt {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 30;
+  width: 60;
+  text-align: right;
+  color: red;
+  text-shadow: 0px 0px 5px white;
+  font-size: 150%;
+  z-Index: 20;
+}
+
+div.tdef {
+  position: absolute;
+  top: 30;
+  height: 30;
+  left: 0;
+  width: 60;
+  text-align: right;
+  color: red;
+  text-shadow: 0px 0px 5px white;
+  font-size: 150%;
+  z-Index: 20;
 }
 
 
@@ -306,12 +343,27 @@ function selected_attUnit(div) {
     if (div.id == '') continue;
     var terra=div.id.split('_');
     if (terra[0] != 'attTerrain') continue;
-    if (rule.terrain[terra[1]] === undefined) {
+    var terrainEffect = rule.terrain[terra[1]];
+    if (terrainEffect === undefined) {
       if (slots.attTerrain == div) needUpdate = true;
       div.style.display = 'none';
     } else {
       if (!firstValid) firstValid = div;
       div.style.display = 'block';
+      if (terrainEffect[1] >= 0) {
+		div.children[0].innerHTML='+'+terrainEffect[1];
+		div.children[0].style.color = 'lightgreen';
+	  } else {
+		div.children[0].innerHTML=terrainEffect[1];
+		div.children[0].style.color = 'red';
+	  }
+      if (terrainEffect[2] >= 0) {
+		div.children[1].innerHTML='+'+terrainEffect[2];
+		div.children[1].style.color = 'lightgreen';
+	  } else {
+		div.children[1].innerHTML=terrainEffect[2];
+		div.children[1].style.color = 'red';
+	  }
     }
   }
 
@@ -319,8 +371,33 @@ function selected_attUnit(div) {
   if (needUpdate) {
     console.log('need update ' + firstValid);
     return unitSel(firstValid, 'attTerrain');
-  } else
+  } 
 
+
+  var defDivs = document.getElementsByClassName('crop');
+  firstValid = null;
+  needUpdate = false;
+  for (var i=0; i<defDivs.length; ++i) {
+    var div=defDivs[i];
+    if (div.id == '') continue;
+    var unit = div.id.split('_');
+    if (unit[0] != 'defUnit') continue;
+    if (!rule.attack[RuleSet.Unit[unit[1]].class]) {
+      if (slots.defUnit == div) needUpdate = true;
+      div.children[0].className='gray';
+      div.onclick=new Function('');
+    } else {
+      if (!firstValid) firstValid = div;
+      div.children[0].className='';
+      div.onclick=new Function('unitSel(this, "defUnit")');
+    }
+  }
+  if (needUpdate) {
+    console.log('need update ' + firstValid);
+    return unitSel(firstValid, 'defUnit');
+  }   
+  
+  
   updateChart();
 };
 
@@ -390,13 +467,29 @@ function selected_defUnit(div) {
     if (div.id == '') continue;
     var terra=div.id.split('_');
     if (terra[0] != 'defTerrain') continue;
-    if (rule.terrain[terra[1]] === undefined) {
+    var terrainEffect = rule.terrain[terra[1]];
+    if (terrainEffect === undefined) {
       if (slots.defTerrain == div) needUpdate = true;
       div.style.display = 'none';
     } else {
       if (!firstValid) firstValid = div;
       div.style.display = 'block';
+      if (terrainEffect[1] >= 0) {
+		div.children[0].innerHTML='+'+terrainEffect[1];
+		div.children[0].style.color = 'lightgreen';
+	  } else {
+		div.children[0].innerHTML=terrainEffect[1];
+		div.children[0].style.color = 'red';
+	  }
+      if (terrainEffect[2] >= 0) {
+		div.children[1].innerHTML='+'+terrainEffect[2];
+		div.children[1].style.color = 'lightgreen';
+	  } else {
+		div.children[1].innerHTML=terrainEffect[2];
+		div.children[1].style.color = 'red';
+	  }
     }
+
   }
 
 
@@ -619,7 +712,7 @@ function init() {
     var div=terraDivs[i];
     if (div.id == '') continue;
     var terra= div.id.split('_');
-    div.innerHTML='<img src="assets/terrain/' + terra[1] + '.png"/>';
+    div.innerHTML='<div class="tatt">+1</div><div class="tdef">+2</div><img src="assets/terrain/' + terra[1] + '.png"/>';
     div.onclick=new Function('unitSel(this, "'+terra[0]+'")');
     div.setAttribute('terrain', terra[1]);
   }
