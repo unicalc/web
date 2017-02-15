@@ -1,439 +1,973 @@
-<!DOCTYPE HTML>
 <html>
-    <head>
-    <link rel="stylesheet" href="https://cdn.webix.com/edge/webix.css" type="text/css">
-    <script src="https://cdn.webix.com/edge/webix.js" type="text/javascript"></script>
-    <script src="ruleset.js"></script>
-    <script src="common.js"></script>
-    </head>
-    <body>
-        <script type="text/javascript" charset="utf-8">
+<head>
+<meta name="viewport" content="width=620" />
+<title>UniWar Damage Calculator mobile</title>
+<script src="ruleset.js"></script>
+<script src="common.js"></script>
 
-		
-        var attacker={
-			name: '',
-			class: '',
-			attack: {},
-			terrain: {}};
-        var attackerId=null;
-        var defender=attacker;
-		var defenderId=null;
-		var attackerTerrain='';
-		var defenderTerrain='';
-		var damage_dataset = [
-			{ att: 20.5, def: 8.7, dmg: 0 },
-			{ att: 10.3, def: 99.9, dmg: 1 }
-		];			
-       
-        var unitData= [{ id: "1", open:true, value:"Sapiens", data: []},
-                { id:"2", open:true, value: "Khraleans", data:[]},
-                { id:"3", open:true, value:"Titans", data:[]}];
-        unitData.sapiens = unitData[0];
-        unitData.khraleans = unitData[1];
-        unitData.titans = unitData[2];
-        for (var unit in RuleSet.Unit) {
-            var rules=RuleSet.Unit[unit];
-            unitData[rules.race].data.push({id: unit, value: rules.name, open: true});
-        }
-        
-        
-		function updateTable() {
-			$$("attHealth").define("max", 10+parseInt($$("attVeteran").getValue()));
-			$$("attHealth").refresh();
-			$$("defHealth").define("max", 10+parseInt($$("defVeteran").getValue()));
-			$$("defHealth").refresh();
-		
-			var table = $$('datatable');
-			
-			
+<style type="text/css">
+html,
+body {
+    position: fixed
+}
 
-			
-			/*var attAtt = attacker.attack[defender.class];
-			var defAtt = defender.attack[attacker.class];
-			var attDef = attacker.defense;
-			var defDef = defender.defense;
-			
-			
-			var attTerrainValues = attacker.terrain[attackerTerrain];
-			var Aa = parseInt(attAtt);
-			var Ad = parseInt(attDef);
-			var Da = parseInt(defAtt);
-			var Dd = parseInt(defDef);
-			var attackerBonus = 0;
-			if (attTerrainValues) {
-				var attAttBonus = attTerrainValues[1];
-				var attDefBonus = attTerrainValues[2];
-				if (attAtt) {
-					Aa += attAttBonus;
-					if (attAttBonus > 0) attAtt = attAtt + "+" + attAttBonus;
-					else if (attAttBonus < 0) attAtt = attAtt + "" + attAttBonus;
-					var x = parseInt($$("attVeteran").getValue());
-					if (x) attAtt = attAtt + "+" + x;
-					Aa += x;
-					attackerBonus += x;
-					var x = parseInt($$("attGangup").getValue());
-					if (x) attAtt = attAtt + "+" + x;
-					Aa += x;
-					attackerBonus += x;
-					var x = parseInt($$("attPopup").getValue())*4;
-					if (x) attAtt = attAtt + "+" + x;
-					Aa += x;
-					attackerBonus += x;
-				}
-				if (attDef) {
-					Ad += attDefBonus;
-					if (attDefBonus > 0) attDef = attDef + "+" + attDefBonus;
-					else if (attDefBonus < 0) attDef = attDef + "" + attDefBonus;
-					var pierce = defender.armorPiercing ? defender.armorPiercing[attacker.class]:null;
-					if (pierce) {
-						if (attDefBonus) attDef = '(' + attDef + ')'
-						attDef += ' - '+Math.round(pierce * 100) + '%';
-						Ad *= (1-pierce);
-					}
-				}
-			} else attAtt = attDef = 'n/a';
-			var defTerrainValues = defender.terrain[defenderTerrain];
-			var defenderBonus = 0;
-			if (defTerrainValues) {
-				var defAttBonus = defTerrainValues[1];
-				var defDefBonus = defTerrainValues[2];
-				if (attacker.maxRange < defender.minRange || attacker.minRange > defender.maxRange) {
-					Da = 0;
-					defAtt = 'out of range';
-				} else
-				if (defAtt) {
-					Da += defAttBonus;
-					if (defAttBonus > 0) defAtt = defAtt + "+" + defAttBonus;
-					else if (defAttBonus < 0) defAtt = defAtt + "" + defAttBonus;
-					var x = parseInt($$("defVeteran").getValue());
-					if (x) defAtt = defAtt + "+" + x;
-					Da += x;
-					defenderBonus =+ x;
-				}
-				if (defDef) {
-					Dd += defDefBonus;
-					if (defDefBonus > 0) defDef = defDef + "+" + defDefBonus;
-					else if (defDefBonus < 0) defDef = defDef + "" + defDefBonus;
-					var pierce = attacker.armorPiercing ? attacker.armorPiercing[defender.class] : null;
-					if (pierce) {
-						if (defDefBonus) defDef = '(' + defDef + ')'
-						defDef += ' - '+Math.round(pierce * 100) + '%';
-						Dd *= (1-pierce);
-					}
-				}
-			} else defAtt = defDef = 'n/a';
-			
-			var p1 = Aa ? 0.5 + 0.05 * (Aa-Dd) : 0;
-			p1 = Math.min(Math.max(p1, 0), 1);
-			var p2 = Da ? 0.5 + 0.05 * (Da-Ad) : 0;
-			p2 = Math.min(Math.max(p2, 0), 1);
-			
+div.attTitle {
+  position: fixed;
+  font-size: 200%;
+  top: 0;
+  left: 0;
+}
 
-			damage_dataset = [];			
-			if (defenderTerrain != '') {
-				result1 = processAttack(attacker, attackerTerrain, Ah, attackerBonus, defender, defenderTerrain, Dh, 1);
-			
-				result2 = processAttack(defender, defenderTerrain, Dh, defenderBonus, attacker, attackerTerrain, Ah, 1);
-			}
-			var d1 = 0;
-			var d2 = 0;
-			var dmgLimit = Math.min(Ah, Dh);
-			var coll1=0;
-			var coll2=0;
-			for (var i = 0; i<=dmgLimit; ++i) {
-				var dmg1 = (chanceOfDamage(Ah, i, p1));
-				if (i == Dh) dmg1 = 1-coll1;
-				else if (i > Dh) dmg1 = 0;
-				else coll1 += dmg1;
-				d1 += (i * dmg1);
-				
-				var dmg2 = (chanceOfDamage(Dh, i, p2))*1;
-				if (i == Ah) dmg2 = 1-coll2;
-				else if (i > Ah) dmg2 = 0;
-				else coll2 += dmg2;
-				d2 += (i * dmg2);
-				damage_dataset.push({
-					att: Math.round(dmg1*1000)/10,
-					def: Math.round(dmg2*1000)/10, 
-					dmg: i })
-			}
+div.hint {
+    -moz-animation: cssAnimation 3s ease-in 3s forwards;
+    -webkit-animation: cssAnimation 3s ease-in 3s forwards;
+    -o-animation: cssAnimation 3s ease-in 3s forwards;
+    animation: cssAnimation 3s ease-in 3s forwards;
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+}
+@keyframes cssAnimation {
+    to {
+       opacity: 0;
+    }
+}
+@-webkit-keyframes cssAnimation {
+    to {
+       opacity: 0;
+    }
+}
 
-			d1 = Math.round(d1*10)/10;
-			d2 = Math.round(d2*10)/10;*/
-			if (!defenderTerrain) return;
-			var Ah = parseInt($$('attHealth').getValue());
-			var Dh = parseInt($$('defHealth').getValue());
-			var attBonus = 0;
-			var x = parseInt($$("attGangup").getValue());
-			attBonus += x;
-			var x = parseInt($$("attPopup").getValue())*4;
-			attBonus += x;
-			model = {
-				units: [
-					{ id: 1, rule: attacker, initialHealth: Ah, terrain: attackerTerrain, vet: parseInt($$("attVeteran").getValue())},
-					{ id: 2, rule: defender, initialHealth: Dh, terrain: defenderTerrain, vet: parseInt($$("defVeteran").getValue())},
-				],
-				battles: [
-					{ attId: 1, defId: 2, attTerrain: attackerTerrain, defTerrain: defenderTerrain, attBonus: attBonus, strikeBack: true }
-				]
-			};
 
-			processData();
-			
-			var battle = model.battles[0];
-			damage_dataset = [];			
-			var dmgLimit = Math.min(Ah, Dh);
-			for (var i = 0; i<=dmgLimit; ++i) {
-				damage_dataset.push({
-					att: Math.round(1000*battle.attackerDamage[i]) / 10,
-					def: Math.round(1000*battle.defenderDamage[i]) / 10, 
-					dmg: i })
-			}
-			
-			var attTerrainValues = attacker.terrain[attackerTerrain];
-			var defTerrainValues = defender.terrain[defenderTerrain];
 
-            var obj = [
-					{ prop: 'Unit', a: attacker.name, d: defender.name  },
-					{ prop: 'Value', a: attacker.cost, d: defender.cost  },
-					{ prop: 'Class', a: attacker.class, d: defender.class  },
-					{ prop: 'p', a: Math.round(battle.p1*100)/100, d: Math.round(battle.p2*100)/100 },
-					{ prop: 'Inflicted Damage', a: -battle.defLoss, d: -battle.attLoss },
-					{ prop: 'Remaining Health', a: Math.round((Ah+battle.attLoss)*10)/10, d: Math.round((Dh+battle.defLoss)*10)/10 },
-					{ prop: 'Credit loss', a: Math.round(-attacker.cost*battle.attLoss)/10, d: Math.round(-defender.cost*battle.defLoss)/10 },
-					{ prop: 'Terrain effect', a: 
-						'A: ' + (attTerrainValues[1] > 0 ? '+':'') +  attTerrainValues[1] +
-						'  D: ' + (attTerrainValues[2] > 0 ? '+':'') +  attTerrainValues[2],
-					 d: 
-						'A: ' + (defTerrainValues[1] > 0 ? '+':'') +  defTerrainValues[1] +
-						'  D: ' + (defTerrainValues[2] > 0 ? '+':'') +  defTerrainValues[2]},
-					{ prop: 'Attack (w/o bonus)', a: attacker.attack[defender.class], d: defender.attack[attacker.class] },
-					{ prop: 'Armor Piercing', a: attacker.armorPiercing[defender.class], d: defender.armorPiercing[attacker.class] },
-					{ prop: 'Defense', a: attacker.defense, d: defender.defense  }
-				];
-            table.clearAll();
-            table.parse(obj);  
-			$$("chart").clearAll();
-			$$("chart").parse(damage_dataset);
-        }
-        
-    var selectAttacker = {view:"tree",
-            select: 1,
-			width: 300,
-  			id: 'attacker',
-			on: {
-                onSelectChange:function (id) {
-                attackerId = id;
-                attacker = RuleSet.Unit[id];
-				if (attacker.canPopup) $$("attPopup").enable();
-				else {
-					$$("attPopup").disable();
-					$$("attPopup").setValue(0);
-					}
-				var t=$$("attackerTerrain");
-				if (t) {
-					var x = t.getSelectedId();
-					t.clearAll();
-					var d = terrainData.filter(function(value) {
-						return attacker.terrain[value.id]
-					});
-					t.parse(d);
-					if (! attacker.terrain[x] ) x = d[0].id;
-					t.select(x);
-					t.showItem(x);
-				}
-                //updateTable();
-                }
-            },
-			data: {id:"root", value:"Races", open:true, data: unitData}
-        };
-    var selectAttackerTerrain = {view:"grouplist",
-            select: 1,
-  			id: 'attackerTerrain',
-            on: {
-                onSelectChange:function (id) {
-                attackerTerrain = id[0];
-                updateTable();
-                }
-            },
-            data: {id:"root", value:"Terrain", open:true, data: terrainData}
-        };
-    var selectDefender = {view:"tree",
-            select: 1,
-			width: 300,
-			id: 'defender',
-           on: {
-                onSelectChange:function (id) {
-                defenderId = id;
-                defender = RuleSet.Unit[id];;
-				var t=$$("defenderTerrain");
-				if (t) {
-					var x = t.getSelectedId();
-					t.clearAll();
-					var d = terrainData.filter(function(value) {
-						return defender.terrain[value.id]
-					});
-					t.parse(d);
-					if (! defender.terrain[x] ) x = d[0].id;
-					t.select(x);
-					t.showItem(x);
-				}
-                //updateTable();
-                }
-            },
-            data: {id:"root", value:"Races", open:true, data: JSON.parse(JSON.stringify(unitData))}
-            };
-    var selectDefenderTerrain = {view:"grouplist",
-            select: 1,
-   			id: 'defenderTerrain',
-            on: {
-                onSelectChange:function (id) {
-                defenderTerrain = id[0];
-                updateTable();
-                }
-            },
-            data: {id:"root", value:"Terrain", open:true, data: JSON.parse(JSON.stringify(terrainData))}
-            };
-			
-			
-        
-    webix.ui({
-		padding: 10,
-		margin: 10,
-        cols: [
-			{rows: [
-				{ template:"Attacker", type:"header" },
-				selectAttacker,
-				{ view:"slider", id: 'attHealth', label:"Health", value:"10", min:1, max: 12, name:"s1", title:webix.template("#value#")},
-				 {view:"radio", id: 'attVeteran', label: 'Veteran', value: '0', options:['0', "1", "2"]},
-				 {view:"radio", id: 'attGangup', label: 'Gangup', value: '0', options:['0', "1", "2", '3']},
-				 {view:"checkbox", id: 'attPopup', label: 'Unbury', value: 0},
-				selectAttackerTerrain]},
-            {
-			rows: [
-				{ template:"Defender", type:"header" },
-				selectDefender,
-				
-				{view:"slider", id: 'defHealth', label:"Health", value:"10", min:1, max: 12, name:"s1", title:webix.template("#value#")},
-				 {view:"radio", id: 'defVeteran', label: 'Veteran', value: '0', options:['0', "1", "2"]},
-				 { view:"label", label: ""},
-				 { view:"label", label: ""},
-				selectDefenderTerrain]},
-			{rows: [
-				{ template:"Result", type:"header" },
-				{view:"datatable", id: 'datatable', 
-					columns:[
-						{ id:"prop",	header:"", 		width:150},
-						{ id:"a",	header:"Attacker",	width:150, editor: "text"},
-						{ id:"d",	header:"Defender" , width:150, editor: "text"}
-					],
-					select:"row",
-					autoheight:false,
-					autowidth:true,
-					editable:true,
-					editaction: "custom",
-					on:{
-						onAfterSelect: function (data,prevent) {
-							if (data.column == "prop" || this.getIndexById(data.row) < 8) return;
-							this.editCell(data.row, data.column);
-						},
-						onAfterEditStop: function (state,editor,ignore) {
-							if (state.old == state.value) return;
-							var unit1;
-							var unit2;
-							if (editor.column == "a") { unit1 = attacker; unit2 = defender; }
-							else { unit1=defender; unit2 = attacker; }
-							switch (this.getIndexById(editor.row)) {
-								case 8: // Attack
-									unit1.attack[unit2.class] = parseInt(state.value);
-									break;
-								case 9: // Armor Piercing
-									unit1.armorPiercing[unit2.class] = parseFloat(state.value);
-									break;
-								case 10: // Defense
-									unit1.defense = parseInt(state.value);
-									break;
-							}
-							updateTable();
-						}
-					}, 
-					data: []},
-				{view:"chart",
-					type:"area",
-					id: "chart",
 
-					xAxis:{
-						template:"#dmg#"
-					},
-					yAxis:{
-						start:0,
-						step:10
-					},
-					legend:{
-						values:[{text:"Attacker",color:"#1293f8"},{text:"Defender",color:"#66cc00"}],
-						align:"right",
-						valign:"middle",
-						layout:"y",
-						width: 100,
-						margin: 8
-					},
-					eventRadius: 5,
-					series:[
-						{
-							value:"#att#",
-							alpha: 0.5,
-							color: "#1293f8",
-							item:{
-								borderColor: "#1293f8",
-								color: "#ffffff"
-							},
-							line:{
-								color:"#1293f8",
-								width:3
-							},
-							tooltip:{
-								template:"#att#%"
-							}
-						},
-						{
-							value:"#def#",
-							alpha: 0.5,
-							color: "#66cc00",
-							item:{
-								borderColor: "#66cc00",
-								color: "#ffffff"
-							},
-							line:{
-								color:"#66cc00",
-								width:3
-							},
-							tooltip:{
-								template:"#def#%"
-							}
-						}
-					]/*,
-					data:  multiple_dataset*/
-				}					
-			]}
-		]
-    });        
-	$$('attacker').showItem('borfly');
-	$$('attacker').select('borfly');
-	$$('attackerTerrain').select('forest');
-	$$('defender').showItem('eclipse');
-	$$('defender').select('eclipse');
-	$$('defenderTerrain').select('base');
-	
-	$$("attHealth").attachEvent("onSliderDrag", updateTable);
-	$$("attVeteran").attachEvent("onChange", updateTable);
-	$$("attGangup").attachEvent("onChange", updateTable);
-	$$("attPopup").attachEvent("onChange", updateTable);
-	$$("defHealth").attachEvent("onSliderDrag", updateTable);
-	$$("defVeteran").attachEvent("onChange", updateTable);
 
-        </script>
+div.defTitle {
+  position: fixed;
+  font-size: 200%;
+  top: 0;
+  right: 0;
+}
+
+
+div.units {
+  position: fixed;
+  top: 60px;
+  width: 240px;
+  overflow: auto;
+  white-space: nowrap;
+  margin-bottom: 5;
+}
+
+div.unitsDef {
+  position: fixed;
+  right: 0;
+  top: 60px;
+  width: 240px;
+  overflow: auto;
+  white-space: nowrap;
+  margin-bottom: 5;
+}
+
+div.unitsDef img {
+  -moz-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+  filter: FlipH;
+  -ms-filter: "FlipH";
+}
+
+  div.wrapper {
+    width: 240;
+  }
+
+  div.crop {
+    width: 80;
+    height: 80;
+    overflow: hidden;
+    float: left;
+    white-space: nowrap;
+  }
+
+  div.crop img {
+    width: 100;
+    height: 100;
+    margin: -10px 0 0 -10px;
+
+  }
+
+  div.health {
+    position: fixed;
+    font-size: 200%;
+    top: 60px;
+    left: 260px;
+    overflow: auto;
+    border-right-style: solid;
+    margin-right: 5;
+  }
+
+  div.healthDef {
+    position: fixed;
+    font-size: 200%;
+    top: 60px;
+    right: 260;
+    overflow: auto;
+    border-left-style: solid;
+    margin-left: 5;
+  }
+
+  div.health div, div.healthDef div {
+    width: 60;
+    height: 60;
+    text-align: center;
+    margin: 0 0 0 0;
+  }
+
+  div.bonus {
+    position: fixed;
+    font-size: 200%;
+    left: 120px;
+    overflow: auto;
+    margin-left: 5;
+  }
+
+  div.bonusDef {
+    position: fixed;
+    font-size: 200%;
+    right: 120;
+    overflow: auto;
+    margin-right: 5;
+  }
+
+  div.bonus div, div.bonusDef div {
+    width: 120;
+    height: 60;
+    text-align: center;
+    margin: 0 0 0 0;
+  }
+
+  div.terrain {
+    width: 120px;
+    overflow: auto;
+    white-space: nowrap;
+    position: fixed;
+    left: 0;
+  }
+
+  div.terrainDef {
+    width: 120px;
+    overflow: auto;
+    white-space: nowrap;
+    position: fixed;
+    right: 0;
+  }
+
+  div.terra {
+    width: 60;
+    height: 60;
+    float: left;
+    position: relative;
+  }
+
+table.results {
+  width: 100%;
+  height: 100%;
+}
+
+td {
+  text-align: right;
+}
+
+img.gray {
+    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);
+}
+
+div.terra img {
+  position: absolute;
+  left: 0;
+}
+
+div.tatt {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 30;
+  width: 60;
+  text-align: right;
+  color: red;
+  text-shadow: 0px 0px 5px white;
+  font-size: 150%;
+  z-Index: 20;
+}
+
+div.tdef {
+  position: absolute;
+  top: 30;
+  height: 30;
+  left: 0;
+  width: 60;
+  text-align: right;
+  color: red;
+  text-shadow: 0px 0px 5px white;
+  font-size: 150%;
+  z-Index: 20;
+}
+
+
+@media all and (orientation:portrait) {
+  div.units, div.unitsDef {
+    bottom: 59%;
+  }
+
+  div.terrain, div.terrainDef {
+    top: 41%;
+    bottom: 33%;
+  }
+
+  div.bonus, div.bonusDef {
+    top: 41%;
+    bottom: 33%;
+  }
+
+  div.health, div.healthDef {
+    bottom: 33%;
+  }
+
+
+  canvas {
+    position: fixed;
+    left: 0;
+    top: 66%;
+    height: 33%;
+    width: 100%;
+    background-color: white;
+    }
+
+  div.results {
+    position: fixed;
+    left: 0;
+    top: 66%;
+    height: 33%;
+    width: 100%;
+    background-color: white;
+    z-index: -1;
+    }
+
+  div.hint {
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 80%;
+    height: 33%;
+    width: 100%;
+    z-index: 0.5;
+    font-size: 200%;
+    text-align: center;
+    }
+
+}
+
+@media all and (orientation:landscape) {
+  div.units, div.unitsDef {
+    bottom: 30%;
+  }
+
+  div.terrain, div.terrainDef {
+    top: 70%;
+    bottom: 0;
+  }
+
+  div.bonus, div.bonusDef {
+    top: 70%;
+    bottom: 0;
+  }
+
+  div.health, div.healthDef {
+    bottom: 0;
+  }
+
+
+  canvas {
+    position: fixed;
+    left: 320;
+    right: 320;
+    bottom: 0;
+    height: 40%;
+    background-color: white;
+    }
+
+  div.results {
+    position: fixed;
+    left: 320;
+    right: 320;
+    top: 0;
+    height: 60%;
+    background-color: white;
+    z-index: -1;
+    }
+
+  div.hint {
+    display: none;
+  }
+
+}
+
+
+
+</style>
 
 <script>
+var slots={};
+
+function selected_attUnit(div) {
+  console.log(div.getAttribute("unit"));
+  var rule=RuleSet.Unit[div.getAttribute("unit")];
+  model.units[0].rule=rule;
+
+  var div=document.getElementById('attUnbury');
+  if (rule.canPopup) {
+    div.style.display='block'
+  } else {
+    unbury = 0;
+    div.style.backgroundColor="white";
+    div.style.display='none';
+  }
+
+
+  var terraDivs = document.getElementsByClassName('terra');
+  var firstValid = null;
+  var needUpdate = false;
+  for (var i=0; i<terraDivs.length; ++i) {
+    var div=terraDivs[i];
+    if (div.id == '') continue;
+    var terra=div.id.split('_');
+    if (terra[0] != 'attTerrain') continue;
+    var terrainEffect = rule.terrain[terra[1]];
+    if (terrainEffect === undefined) {
+      if (slots.attTerrain == div) needUpdate = true;
+      div.style.display = 'none';
+    } else {
+      if (!firstValid) firstValid = div;
+      div.style.display = 'block';
+      if (terrainEffect[1] >= 0) {
+		div.children[0].innerHTML='+'+terrainEffect[1];
+		div.children[0].style.color = 'lightgreen';
+	  } else {
+		div.children[0].innerHTML=terrainEffect[1];
+		div.children[0].style.color = 'red';
+	  }
+      if (terrainEffect[2] >= 0) {
+		div.children[1].innerHTML='+'+terrainEffect[2];
+		div.children[1].style.color = 'lightgreen';
+	  } else {
+		div.children[1].innerHTML=terrainEffect[2];
+		div.children[1].style.color = 'red';
+	  }
+    }
+  }
+
+
+  if (needUpdate) {
+    console.log('need update ' + firstValid);
+    return unitSel(firstValid, 'attTerrain');
+  } 
+
+
+  var defDivs = document.getElementsByClassName('crop');
+  firstValid = null;
+  needUpdate = false;
+  for (var i=0; i<defDivs.length; ++i) {
+    var div=defDivs[i];
+    if (div.id == '') continue;
+    var unit = div.id.split('_');
+    if (unit[0] != 'defUnit') continue;
+    if (!rule.attack[RuleSet.Unit[unit[1]].class]) {
+      if (slots.defUnit == div) needUpdate = true;
+      div.children[0].className='gray';
+      div.onclick=new Function('');
+    } else {
+      if (!firstValid) firstValid = div;
+      div.children[0].className='';
+      div.onclick=new Function('unitSel(this, "defUnit")');
+    }
+  }
+  if (needUpdate) {
+    console.log('need update ' + firstValid);
+    return unitSel(firstValid, 'defUnit');
+  }   
+  
+  
+  updateChart();
+};
+
+function selected_attTerrain(div) {
+  console.log(div.getAttribute("terrain"));
+  model.units[0].terrain=div.getAttribute("terrain");
+  model.battles[0].attTerrain=div.getAttribute("terrain");
+  updateChart();
+};
+
+function selected_attHealth(div) {
+  console.log(div.innerHTML);
+  model.units[0].initialHealth=parseInt(div.innerHTML);
+  updateChart();
+}
+
+function selected_attVet(div) {
+  console.log(div.innerHTML);
+  var level=parseInt(div.id.split('_')[1])
+  model.units[0].vet=level;
+  var div10=document.getElementById('attHealth_10');
+  var div11=document.getElementById('attHealth_11');
+  var div12=document.getElementById('attHealth_12');
+  
+  if (level==0) {
+    div11.style.display='none';
+    div12.style.display='none';
+    if (slots.attHealth == div11 || slots.attHealth == div12) return unitSel(div10, 'attHealth');
+  } else
+  if (level==1) {
+    div11.style.display='block';
+    div12.style.display='none';
+    if (slots.attHealth == div12) return unitSel(div11, 'attHealth');
+  } else
+  if (level==2) {
+    div11.style.display='block';
+    div12.style.display='block';
+  }
+  updateChart();
+}
+
+var gangup=0;
+function selected_attGang(div) {
+  console.log(div.innerHTML);
+  gangup=parseInt(div.id.split('_')[1]);
+  updateChart();
+}
+
+var unbury=0;
+function toggleUnbury() {
+  var div=document.getElementById('attUnbury');
+  unbury = 4-unbury;
+  div.style.backgroundColor=unbury ? "green" : "white";
+  updateChart();
+}
+
+
+function selected_defUnit(div) {
+  console.log(div.getAttribute("unit"));
+  var rule=RuleSet.Unit[div.getAttribute("unit")];
+  model.units[1].rule=rule;
+  var terraDivs = document.getElementsByClassName('terra');
+  var firstValid = null;
+  var needUpdate = false;
+  for (var i=0; i<terraDivs.length; ++i) {
+    var div=terraDivs[i];
+    if (div.id == '') continue;
+    var terra=div.id.split('_');
+    if (terra[0] != 'defTerrain') continue;
+    var terrainEffect = rule.terrain[terra[1]];
+    if (terrainEffect === undefined) {
+      if (slots.defTerrain == div) needUpdate = true;
+      div.style.display = 'none';
+    } else {
+      if (!firstValid) firstValid = div;
+      div.style.display = 'block';
+      if (terrainEffect[1] >= 0) {
+		div.children[0].innerHTML='+'+terrainEffect[1];
+		div.children[0].style.color = 'lightgreen';
+	  } else {
+		div.children[0].innerHTML=terrainEffect[1];
+		div.children[0].style.color = 'red';
+	  }
+      if (terrainEffect[2] >= 0) {
+		div.children[1].innerHTML='+'+terrainEffect[2];
+		div.children[1].style.color = 'lightgreen';
+	  } else {
+		div.children[1].innerHTML=terrainEffect[2];
+		div.children[1].style.color = 'red';
+	  }
+    }
+
+  }
+
+
+  if (needUpdate) {
+    console.log('need update ' + firstValid);
+    return unitSel(firstValid, 'defTerrain');
+  } else
+
+  updateChart();
+  updateChart();
+};
+
+function selected_defHealth(div) {
+  console.log(div.innerHTML);
+  model.units[1].initialHealth=parseInt(div.innerHTML);
+  updateChart();
+}
+
+function selected_defTerrain(div) {
+  console.log(div.getAttribute("terrain"));
+  model.units[1].terrain=div.getAttribute('terrain');
+  model.battles[0].defTerrain=div.getAttribute("terrain");
+  updateChart();
+};
+
+function selected_defVet(div) {
+  console.log(div.innerHTML);
+  var level=parseInt(div.id.split('_')[1])
+  model.units[1].vet=level;
+  var div10=document.getElementById('defHealth_10');
+  var div11=document.getElementById('defHealth_11');
+  var div12=document.getElementById('defHealth_12');
+  
+  if (level==0) {
+    div11.style.display='none';
+    div12.style.display='none';
+    if (slots.defHealth == div11 || slots.defHealth == div12) return unitSel(div10, 'defHealth');
+  } else
+  if (level==1) {
+    div11.style.display='block';
+    div12.style.display='none';
+    if (slots.defHealth == div12) return unitSel(div11, 'defHealth');
+  } else
+  if (level==2) {
+    div11.style.display='block';
+    div12.style.display='block';
+  }
+  updateChart();
+
+}
+
+
+
+function unitSel(div, slot) {
+  if (slots[slot]) slots[slot].style.backgroundColor="white";
+  slots[slot]=div;
+  div.style.backgroundColor=slot.substr(0,3)=="att" ? "green" : "blue";
+  var sel = "selected_"+slot;
+  if (window[sel]) window[sel](div);
+}
+
+
+function renderChart() {
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width, canvas.height);
+  var margin = { top: 40, left: 75, right: 0, bottom: 75 };
+  var xMax = canvas.width - margin.left - margin.right;
+  var yMax = canvas.height - margin.top - margin.bottom;
+
+  var lingrad = ctx.createLinearGradient(margin.left, margin.top, xMax - margin.right, yMax - margin.top);
+  lingrad.addColorStop(0.0, '#D4D4D4');
+  lingrad.addColorStop(0.2, '#fff');
+  lingrad.addColorStop(0.8, '#fff');
+  lingrad.addColorStop(1, '#D4D4D4');
+  ctx.fillStyle = lingrad;
+  ctx.fillRect(margin.left, margin.top, xMax - margin.left, yMax - margin.top);
+  ctx.fillStyle = 'black';
+
+
+  var len = data1.length;
+  if (data2.length>data1.length) len = data2.length;
+  var xf = (xMax-margin.left) / (len-1);
+
+  var maxValue=0;
+  for (var i=0; i<data1.length; ++i) if (maxValue < data1[i]) maxValue=data1[i];
+  for (var i=0; i<data2.length; ++i) if (maxValue < data2[i]) maxValue=data2[i];
+
+//  ctx.lineWidth=1;
+  ctx.strokeStyle = '#bbb';
+  ctx.font = '22pt Calibri';
+  var xpos = margin.left;
+  for (var i=0; i<len; ++i) {
+    ctx.beginPath();
+    ctx.moveTo(xpos, yMax);
+    ctx.lineTo(xpos, margin.top);
+    ctx.stroke();
+    ctx.fillText(i, xpos-10, yMax+25);
+    xpos += xf;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(margin.left, yMax);
+  ctx.lineTo(xMax, yMax);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(margin.left, (margin.top+yMax)/2);
+  ctx.lineTo(xMax, (margin.top+yMax)/2);
+  ctx.stroke();
+  ctx.fillText(Math.round(maxValue*50)+"%", 0, (margin.top+yMax)/2);
+
+
+  ctx.beginPath();
+  ctx.moveTo(margin.left, margin.top);
+  ctx.lineTo(xMax, margin.top);
+  ctx.stroke();
+  ctx.fillText(Math.round(maxValue*100)+"%", 0, margin.top);
+
+  ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+  ctx.font = '20pt Calibri';
+  ctx.beginPath();
+  ctx.moveTo(margin.left, yMax);
+  var xpos = margin.left;
+  for (var i=0; i<data1.length; ++i) {
+    ctx.lineTo(xpos, yMax - data1[i] * (yMax-margin.top) / maxValue);
+    ctx.save();
+    ctx.translate(xpos-10, yMax+60);
+    ctx.rotate(-Math.PI/8);
+    ctx.fillText(Math.round(1000*data1[i])/10, 0,0);
+    ctx.restore();
+    xpos += xf;
+  }
+  ctx.lineTo(xpos-xf, yMax);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(0, 0, 255, 0.5)";
+  ctx.beginPath();
+  ctx.moveTo(margin.left, yMax);
+  var xpos = margin.left;
+  for (var i=0; i<data2.length; ++i) {
+    ctx.lineTo(xpos, yMax - data2[i] * (yMax-margin.top) / maxValue);
+    ctx.save();
+    ctx.translate(xpos-10, canvas.height-10);
+    ctx.rotate(-Math.PI/8);
+    ctx.fillText(Math.round(1000*data2[i])/10, 0,0);
+    ctx.restore();
+    xpos += xf;
+  }
+  ctx.lineTo(xpos-xf, yMax);
+  ctx.closePath();
+  ctx.fill();
+
+
+}
+
+//renderChart();
+
+function updateChart() {
+  model.battles[0].attBonus = gangup +  unbury;
+
+  var battle = model.battles[0];
+  var attacker = model.units[0];
+  var defender = model.units[1];
+  var attTerrainValues = attacker.rule.terrain[battle.attTerrain];
+  var defTerrainValues = defender.rule.terrain[battle.defTerrain];
+
+  battle.strikeBack = defender.rule.minRange <= attacker.rule.maxRange && defender.rule.maxRange >= attacker.rule.minRange;
+
+  processData();
+  data1=model.battles[0].attackerDamage;
+  data2=model.battles[0].defenderDamage;
+  renderChart();
+
+
+  var battle = model.battles[0];
+  var attacker = model.units[0];
+  var defender = model.units[1];
+  var attTerrainValues = attacker.rule.terrain[battle.attTerrain];
+  var defTerrainValues = defender.rule.terrain[battle.defTerrain];
+
+
+  document.getElementById('t11').innerHTML=attacker.rule.name + ' (' + attacker.rule.class + ')';
+  document.getElementById('t12').innerHTML=defender.rule.name + ' (' + defender.rule.class + ')';
+  document.getElementById('t21').innerHTML=attacker.rule.cost;
+  document.getElementById('t22').innerHTML=defender.rule.cost;
+  document.getElementById('t31').innerHTML=-battle.defLoss;
+  document.getElementById('t32').innerHTML=battle.strikeBack ? -battle.attLoss : 'out of range';
+  document.getElementById('t41').innerHTML=attacker.health;
+  document.getElementById('t42').innerHTML=defender.health;
+  document.getElementById('t51').innerHTML=Math.round(-attacker.rule.cost*battle.attLoss)/10;
+  document.getElementById('t52').innerHTML=Math.round(-defender.rule.cost*battle.defLoss)/10;
+  document.getElementById('t61').innerHTML=attacker.rule.attack[defender.rule.class] + '/' + attacker.rule.defense;
+  document.getElementById('t62').innerHTML=defender.rule.attack[attacker.rule.class] + '/' + defender.rule.defense;
+  document.getElementById('t71').innerHTML='A: ' + (attTerrainValues[1] > 0 ? '+':'') +  attTerrainValues[1] + '  D: ' + (attTerrainValues[2] > 0 ? '+':'') +  attTerrainValues[2];
+  document.getElementById('t72').innerHTML='A: ' + (defTerrainValues[1] > 0 ? '+':'') +  defTerrainValues[1] + '  D: ' + (defTerrainValues[2] > 0 ? '+':'') +  defTerrainValues[2];
+  document.getElementById('t81').innerHTML=Math.round(1000*attacker.rule.armorPiercing[defender.rule.class])/10 + '%';
+  document.getElementById('t82').innerHTML=Math.round(1000*defender.rule.armorPiercing[attacker.rule.class])/10 + '%';
+  document.getElementById('t91').innerHTML=Math.round(battle.p1*100)/100;
+  document.getElementById('t92').innerHTML=Math.round(battle.p2*100)/100;
+    
+}
+
+function init() {
+
+
+  var unitDivs = document.getElementsByClassName('crop');
+  for (var i=0; i<unitDivs.length; ++i) {
+    var div=unitDivs[i];
+    if (div.id == '') continue;
+    var unit=div.id.split('_');
+    div.innerHTML='<img src="assets/units/' + RuleSet.Unit[unit[1]].image + '"/>';
+    div.onclick=new Function('unitSel(this, "'+unit[0]+'")');
+    div.setAttribute('unit', unit[1]);
+  }
+
+  var terraDivs = document.getElementsByClassName('terra');
+  for (var i=0; i<terraDivs.length; ++i) {
+    var div=terraDivs[i];
+    if (div.id == '') continue;
+    var terra= div.id.split('_');
+    div.innerHTML='<div class="tatt">+1</div><div class="tdef">+2</div><img src="assets/terrain/' + terra[1] + '.png"/>';
+    div.onclick=new Function('unitSel(this, "'+terra[0]+'")');
+    div.setAttribute('terrain', terra[1]);
+  }
+
+  unitSel(document.getElementById('attUnit_marine'), 'attUnit');
+  unitSel(document.getElementById('attHealth_10'), 'attHealth');
+  unitSel(document.getElementById('attTerrain_plain'), 'attTerrain');
+  unitSel(document.getElementById('attVet_0'), 'attVet');
+  unitSel(document.getElementById('attGang_0'), 'attGang');
+
+  unitSel(document.getElementById('defUnit_mecha'), 'defUnit');
+  unitSel(document.getElementById('defHealth_10'), 'defHealth');
+  unitSel(document.getElementById('defTerrain_base'), 'defTerrain');
+  unitSel(document.getElementById('defVet_0'), 'defVet');
+
+}
+
+function updateOrientation() {
+  var viewport = document.querySelector("meta[name=viewport]");
+  switch (window.orientation) {
+    case 0: //portrait
+      viewport.setAttribute('content', 'width=642')
+      break;
+    case 90: case -90: //landscape
+      viewport.setAttribute('content', 'width=1024');
+      break;
+    default:
+      viewport.setAttribute('content', 'width=642')
+      break;
+  }
+} 
+
+updateOrientation();
+window.addEventListener('orientationchange', updateOrientation, false);
+
+
+</script>
+
+</head>
+<body onload="updateChart()">
+<div class="attTitle">Attacker</div>
+<div class="defTitle">Defender</div>
+<div class="units">
+  <div class="wrapper">
+    <div class="crop" id="attUnit_marine"></div>
+    <div class="crop" id="attUnit_mecha"></div>
+    <div class="crop" id="attUnit_underling"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_mecha2"></div>
+    <div class="crop" id="attUnit_cyberUnderling"></div>
+    <div class="crop" id="attUnit_infectedMarine"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_engineer"></div>
+    <div class="crop" id="attUnit_assimilator"></div>
+    <div class="crop" id="attUnit_infector"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_fuze"></div>
+    <div class="crop" id="attUnit_mantisse"></div>
+    <div class="crop" id="attUnit_salamander"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_bopper"></div>
+    <div class="crop" id="attUnit_guardian"></div>
+    <div class="crop" id="attUnit_borfly"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_marauder"></div>
+    <div class="crop" id="attUnit_speeder"></div>
+    <div class="crop" id="attUnit_swarmer"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_helicopter"></div>
+    <div class="crop" id="attUnit_eclipse"></div>
+    <div class="crop" id="attUnit_garuda"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_tank"></div>
+    <div class="crop" id="attUnit_plasmaTank"></div>
+    <div class="crop" id="attUnit_pinzer"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_battery"></div>
+    <div class="crop" id="attUnit_walker"></div>
+    <div class="crop" id="attUnit_wyrm"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_destroyer"></div>
+    <div class="crop" id="attUnit_hydronaut"></div>
+    <div class="crop" id="attUnit_leviathan"></div>
+  </div>
+</div>
+
+<div class="health">
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_1">1</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_2">2</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_3">3</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_4">4</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_5">5</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_6">6</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_7">7</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_8">8</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_9">9</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_10">10</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_11">11</div>
+  <div onclick="unitSel(this, 'attHealth')" id="attHealth_12">12</div>
+</div>
+
+<div class="terrain">
+  <div class="terra" id="attTerrain_plain"></div>
+  <div class="terra" id="attTerrain_base"></div>
+  <div class="terra" id="attTerrain_city"></div>
+  <div class="terra" id="attTerrain_forest"></div>
+  <div class="terra" id="attTerrain_swamp"></div>
+  <div class="terra" id="attTerrain_desert"></div>
+  <div class="terra" id="attTerrain_mountain"></div>
+  <div class="terra" id="attTerrain_medical"></div>
+  <div class="terra" id="attTerrain_road"></div>
+  <div class="terra" id="attTerrain_bridge"></div>
+  <div class="terra" id="attTerrain_harbor"></div>
+  <div class="terra" id="attTerrain_reef"></div>
+  <div class="terra" id="attTerrain_water"></div>
+  <div class="terra" id="attTerrain_ocean"></div>
+  <div class="terra" id="attTerrain_chasm"></div>
+</div>
+
+<div class="bonus">
+  <div onclick="toggleUnbury()" id="attUnbury">unbury</div>
+  <div onclick="unitSel(this, 'attVet')" id="attVet_0">Vet 0</div>
+  <div onclick="unitSel(this, 'attVet')" id="attVet_1">Vet 1</div>
+  <div onclick="unitSel(this, 'attVet')" id="attVet_2">Vet 2</div>
+  <div onclick="unitSel(this, 'attGang')" id="attGang_0">+0</div>
+  <div onclick="unitSel(this, 'attGang')" id="attGang_1">+1</div>
+  <div onclick="unitSel(this, 'attGang')" id="attGang_2">+2</div>
+  <div onclick="unitSel(this, 'attGang')" id="attGang_3">+3</div>
+</div>
+
+<div class="bonusDef">
+  <div onclick="unitSel(this, 'defVet')" id="defVet_0">Vet 0</div>
+  <div onclick="unitSel(this, 'defVet')" id="defVet_1">Vet 1</div>
+  <div onclick="unitSel(this, 'defVet')" id="defVet_2">Vet 2</div>
+</div>
+
+
+<div class="terrainDef">
+  <div class="terra" id="defTerrain_plain"></div>
+  <div class="terra" id="defTerrain_base"></div>
+  <div class="terra" id="defTerrain_city"></div>
+  <div class="terra" id="defTerrain_forest"></div>
+  <div class="terra" id="defTerrain_swamp"></div>
+  <div class="terra" id="defTerrain_desert"></div>
+  <div class="terra" id="defTerrain_mountain"></div>
+  <div class="terra" id="defTerrain_medical"></div>
+  <div class="terra" id="defTerrain_road"></div>
+  <div class="terra" id="defTerrain_bridge"></div>
+  <div class="terra" id="defTerrain_harbor"></div>
+  <div class="terra" id="defTerrain_reef"></div>
+  <div class="terra" id="defTerrain_water"></div>
+  <div class="terra" id="defTerrain_ocean"></div>
+  <div class="terra" id="defTerrain_chasm"></div>
+</div>
+
+
+<div class="healthDef">
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_1">1</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_2">2</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_3">3</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_4">4</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_5">5</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_6">6</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_7">7</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_8">8</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_9">9</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_10">10</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_11">11</div>
+  <div onclick="unitSel(this, 'defHealth')" id="defHealth_12">12</div>
+</div>
+
+
+
+<div class="unitsDef">
+  <div class="wrapper">
+    <div class="crop" id="defUnit_marine"></div>
+    <div class="crop" id="defUnit_mecha"></div>
+    <div class="crop" id="defUnit_underling"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_mecha2"></div>
+    <div class="crop" id="defUnit_cyberUnderling"></div>
+    <div class="crop" id="defUnit_infectedMarine"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_engineer"></div>
+    <div class="crop" id="defUnit_assimilator"></div>
+    <div class="crop" id="defUnit_infector"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_fuze"></div>
+    <div class="crop" id="defUnit_mantisse"></div>
+    <div class="crop" id="defUnit_salamander"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_bopper"></div>
+    <div class="crop" id="defUnit_guardian"></div>
+    <div class="crop" id="defUnit_borfly"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_marauder"></div>
+    <div class="crop" id="defUnit_speeder"></div>
+    <div class="crop" id="defUnit_swarmer"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_helicopter"></div>
+    <div class="crop" id="defUnit_eclipse"></div>
+    <div class="crop" id="defUnit_garuda"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_tank"></div>
+    <div class="crop" id="defUnit_plasmaTank"></div>
+    <div class="crop" id="defUnit_pinzer"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_battery"></div>
+    <div class="crop" id="defUnit_walker"></div>
+    <div class="crop" id="defUnit_wyrm"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_destroyer"></div>
+    <div class="crop" id="defUnit_hydronaut"></div>
+    <div class="crop" id="defUnit_leviathan"></div>
+  </div>
+</div>
+
+
+<canvas id="canvas" width="800" height="400" onclick="document.getElementById('resultDiv').style.zIndex=1"></canvas>
+<div class="hint">tap to show details</div>
+<div class="results" id="resultDiv"  onclick="document.getElementById('resultDiv').style.zIndex=-1">
+
+<table border class="results">
+<tr><th></th><th id="t11">Attacker</th><th id="t12">Defender</th></tr>
+<tr><th>Cost</th><td id="t21"></td><td id="t22"></td></tr>
+<tr><th>Inflicted Damage</th><td id="t31"></td><td id="t32"></td></tr>
+<tr><th>Remaining Health</th><td id="t41"></td><td id="t42"></td></tr>
+<tr><th>Credit Loss</th><td id="t51"></td><td id="t52"></td></tr>
+<tr><th>Attack / Defense</th><td id="t61"></td><td id="t62"></td></tr>
+<tr><th>Terrain Effect</th><td id="t71"></td><td id="t72"></td></tr>
+<tr><th>Armor Piercing</th><td id="t81"></td><td id="t82"></td></tr>
+<tr><th>p-Value</th><td id="t91"></td><td id="t92"></td></tr>
+</table>
+</div>
+
+
+<script>init();
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -442,7 +976,8 @@
   ga('create', 'UA-89381145-1', 'auto');
   ga('send', 'pageview');
 
+
 </script>
 
-    </body>
-</html>
+
+</body>
