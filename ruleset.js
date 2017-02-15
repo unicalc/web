@@ -216,7 +216,7 @@ fuze = new amphibianUnit(
 	cost: 200,
 	mobility: 11,
 	vision: 4,
-	attack: { GL: 5, GH: 4, AIR: 3, AQUA: 4, AMPHI: 6},
+	attack: { GL: 5, GH: 4, AIR: 1, AQUA: 4, AMPHI: 6},
 	armorPiercing: { GL: 0.25, GH: 0, AIR: 0, AQUA: 0.2, AMPHI: 0},
 	maxRange: 2,
 	defense: 2});
@@ -318,7 +318,7 @@ mantisse = new amphibianUnit(
 	cost: 250,
 	mobility: 11,
 	vision: 4,
-	attack: { GL: 6, GH: 4, AIR: 4, AQUA: 4, AMPHI: 6},
+	attack: { GL: 6, GH: 4, AIR: 2, AQUA: 4, AMPHI: 6},
 	armorPiercing: { GL: 0.25, GH: 0, AIR: 0.1, AQUA: 0.2, AMPHI: 0},
 	maxRange: 2,
 	defense: 4});
@@ -418,7 +418,7 @@ salamander = new amphibianUnit(
 	cost: 200,
 	mobility: 9,
 	vision: 4,
-	attack: { GL: 6, GH: 4, AIR: 0, AQUA: 6, AMPHI: 6},
+	attack: { GL: 6, GH: 4, AIR: 2, AQUA: 6, AMPHI: 6},
 	armorPiercing: { GL: 0.25, GH: 0, AIR: 0, AQUA: 0.4, AMPHI: 0},
 	maxRange: 1,
 	defense: 6,
