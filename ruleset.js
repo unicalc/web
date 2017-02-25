@@ -164,8 +164,8 @@ bopper = new groundLightUnit(
 	cost: 300,
 	mobility: 7,
 	vision: 3,
-	attack: { GL: 3, GH: 5, AIR: 2, AQUA: 5, AMPHI: 3},
-	armorPiercing: { GL: 0, GH: 0.3, AIR: 0.35, AQUA: 0.5, AMPHI: 0},
+	attack: { GL: 3, GH: 5, AIR: 1, AQUA: 5, AMPHI: 3},
+	armorPiercing: { GL: 0, GH: 0.3, AIR: 0.35, AQUA: 0.5, AMPHI: 0.25},
 	minRange: 3,
 	maxRange: 3,
 	defense: 0,
@@ -214,7 +214,7 @@ destroyer = new aquaUnit(
 fuze = new amphibianUnit(
 	{name: 'Fuze',
 	cost: 200,
-	mobility: 11,
+	mobility: 9,
 	vision: 4,
 	attack: { GL: 5, GH: 4, AIR: 1, AQUA: 4, AMPHI: 6},
 	armorPiercing: { GL: 0.25, GH: 0, AIR: 0, AQUA: 0.2, AMPHI: 0},
@@ -266,7 +266,7 @@ guardian = new groundLightUnit(
 	cost: 350,
 	mobility: 10,
 	vision: 2,
-	attack: { GL: 7, GH: 7, AIR: 8, AQUA: 7, AMPHI: 7},
+	attack: { GL: 7, GH: 5, AIR: 7, AQUA: 5, AMPHI: 7},
 	armorPiercing: { GL: 0, GH: 0.45, AIR: 0, AQUA: 0.45, AMPHI: 0},
 	minRange: 1,
 	maxRange: 2,
@@ -286,7 +286,7 @@ eclipse = new groundHeavyUnit(
 	cost: 400,
 	mobility: 10,
 	vision: 4,
-	attack: { GL: 10, GH: 4, AIR: 12, AQUA: 9, AMPHI: 10},
+	attack: { GL: 10, GH: 4, AIR: 12, AQUA: 5, AMPHI: 10},
 	minRange: 1,
 	maxRange: 2,
 	defense: 9});
@@ -357,12 +357,13 @@ borfly = new airUnit(
 	cost: 200,
 	mobility: 6,
 	vision: 3,
-	armorPiercing: { GL: 0, GH: 0.5, AIR: 0.5, AQUA: 0.5, AMPHI: 0},
+	armorPiercing: { GL: 0, GH: 0.5, AIR: 0.5, AQUA: 0.5, AMPHI: 0.25},
 	attack: { GL: 4, GH: 6, AIR: 1, AQUA: 4, AMPHI: 4},
 	minRange: 2,
 	maxRange: 3,
 	defense: 2,
-	attackAfterMove: false});
+	attackAfterMove: false,
+	moveAfterAttack: 6});
 
 swarmer = new airUnit(
 	{name: 'Swarmer',
@@ -379,7 +380,7 @@ garuda = new airUnit(
 	cost: 350,
 	mobility: 12,
 	vision: 5,
-	attack: { GL: 7, GH: 8, AIR: 9, AQUA: 9, AMPHI: 7},
+	attack: { GL: 7, GH: 8, AIR: 9, AQUA: 8, AMPHI: 7},
 	defense: 8,
 	repair: 2});
 
@@ -418,12 +419,12 @@ salamander = new amphibianUnit(
 	cost: 200,
 	mobility: 9,
 	vision: 4,
-	attack: { GL: 6, GH: 4, AIR: 2, AQUA: 6, AMPHI: 6},
+	attack: { GL: 6, GH: 4, AIR: 3, AQUA: 6, AMPHI: 6},
 	armorPiercing: { GL: 0.25, GH: 0, AIR: 0, AQUA: 0.4, AMPHI: 0},
 	maxRange: 1,
 	defense: 6,
 	specialAttack: 'Plague',
-	specialAttackRange: 2,
+	specialAttackRange: 1,
 	specialAttackRecharge: 0});
 
 sapiens = [marine, mecha2, engineer, marauder, bopper, tank, helicopter, battery, destroyer, fuze];
