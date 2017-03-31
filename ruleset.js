@@ -370,7 +370,7 @@ swarmer = new airUnit(
 	cost: 250,
 	mobility: 9,
 	vision: 5,
-	attack: { GL: 7, GH: 4, AIR: 3, AQUA: 6, AMPHI: 7},
+	attack: { GL: 8, GH: 4, AIR: 3, AQUA: 6, AMPHI: 7},
 	minRange: 1,
 	maxRange: 2,
 	defense: 4});
