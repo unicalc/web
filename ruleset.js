@@ -422,7 +422,7 @@ salamander = new amphibianUnit(
 	attack: { GL: 6, GH: 4, AIR: 3, AQUA: 6, AMPHI: 6},
 	armorPiercing: { GL: 0.25, GH: 0, AIR: 0, AQUA: 0.4, AMPHI: 0},
 	maxRange: 1,
-	defense: 6,
+	defense: 8,
 	specialAttack: 'Plague',
 	specialAttackRange: 1,
 	specialAttackRecharge: 0});
