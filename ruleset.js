@@ -256,7 +256,7 @@ speeder = new groundHeavyUnit(
 	cost: 250,
 	mobility: 16,
 	vision: 5,
-	attack: { GL: 10, GH: 5, AIR: 5, AQUA: 5, AMPHI: 10},
+	attack: { GL: 10, GH: 5, AIR: 5, AQUA: 5, AMPHI: 8},
 	defense: 8,
 	moveAfterAttack: 6,
 	repair: 2});
