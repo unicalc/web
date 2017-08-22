@@ -18,6 +18,15 @@ div.attTitle {
   left: 0;
 }
 
+div.aboutLink {
+  position: fixed;
+  font-size: 200%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+
 div.hint {
     -moz-animation: cssAnimation 3s ease-in 3s forwards;
     -webkit-animation: cssAnimation 3s ease-in 3s forwards;
@@ -252,7 +261,13 @@ div.tdef {
     width: 100%;
     background-color: white;
     z-index: -1;
-    }
+    overflow: auto;
+	}
+	
+	  div.aboutLink {
+    display: block;
+  }
+    
 
   div.hint {
     display: block;
@@ -307,12 +322,15 @@ div.tdef {
     z-index: -1;
     }
 
+  div.aboutLink {
+    display: none;
+  }
+    
   div.hint {
     display: none;
   }
 
 }
-
 
 
 </style>
@@ -321,7 +339,6 @@ div.tdef {
 var slots={};
 
 function selected_attUnit(div) {
-  console.log(div.getAttribute("unit"));
   var rule=RuleSet.Unit[div.getAttribute("unit")];
   model.units[0].rule=rule;
 
@@ -370,7 +387,7 @@ function selected_attUnit(div) {
 
   if (needUpdate) {
     console.log('need update ' + firstValid);
-    return unitSel(firstValid, 'attTerrain');
+    unitSel(firstValid, 'attTerrain');
   } 
 
 
@@ -382,13 +399,22 @@ function selected_attUnit(div) {
     if (div.id == '') continue;
     var unit = div.id.split('_');
     if (unit[0] != 'defUnit') continue;
-    if (!rule.attack[RuleSet.Unit[unit[1]].class]) {
-      if (slots.defUnit == div) needUpdate = true;
+    if (!rule.attack[RuleSet.Unit[unit[1]].class] || (!rule.name.endsWith(" (under water)") && RuleSet.Unit[unit[1]].name.endsWith(" (under water)"))  ) {
+      
+	  div.style.backgroundColor = 'lightgray';
+	  if (slots.defUnit == div) {
+	    slots.defUnit = null;
+	    needUpdate = true;
+	  }
       div.children[0].className='gray';
       div.onclick=new Function('');
     } else {
+	  if (div.children[0].className=='gray') {
+	    div.style.backgroundColor = 'white';
+        div.children[0].className='';
+	  }
       if (!firstValid) firstValid = div;
-      div.children[0].className='';
+      
       div.onclick=new Function('unitSel(this, "defUnit")');
     }
   }
@@ -609,16 +635,18 @@ function renderChart() {
   ctx.stroke();
   ctx.fillText(Math.round(maxValue*100)+"%", 0, margin.top);
 
-  ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+  
   ctx.font = '20pt Calibri';
   ctx.beginPath();
   ctx.moveTo(margin.left, yMax);
   var xpos = margin.left;
   for (var i=0; i<data1.length; ++i) {
+	ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
     ctx.lineTo(xpos, yMax - data1[i] * (yMax-margin.top) / maxValue);
     ctx.save();
     ctx.translate(xpos-10, yMax+60);
     ctx.rotate(-Math.PI/8);
+	ctx.fillStyle = "rgba(0, 128, 0, 1)";
     ctx.fillText(Math.round(1000*data1[i])/10, 0,0);
     ctx.restore();
     xpos += xf;
@@ -627,15 +655,17 @@ function renderChart() {
   ctx.closePath();
   ctx.fill();
 
-  ctx.fillStyle = "rgba(0, 0, 255, 0.5)";
+ 
   ctx.beginPath();
   ctx.moveTo(margin.left, yMax);
   var xpos = margin.left;
   for (var i=0; i<data2.length; ++i) {
+	ctx.fillStyle = "rgba(0, 0, 255, 0.5)";
     ctx.lineTo(xpos, yMax - data2[i] * (yMax-margin.top) / maxValue);
     ctx.save();
     ctx.translate(xpos-10, canvas.height-10);
     ctx.rotate(-Math.PI/8);
+    ctx.fillStyle = "rgba(0, 0, 128, 1)"
     ctx.fillText(Math.round(1000*data2[i])/10, 0,0);
     ctx.restore();
     xpos += xf;
@@ -754,6 +784,7 @@ window.addEventListener('orientationchange', updateOrientation, false);
 </head>
 <body onload="updateChart()">
 <div class="attTitle">Attacker</div>
+<div class="aboutLink"><a href="about.html">-&gt; About</a></div>
 <div class="defTitle">Defender</div>
 <div class="units">
   <div class="wrapper">
@@ -805,6 +836,16 @@ window.addEventListener('orientationchange', updateOrientation, false);
     <div class="crop" id="attUnit_destroyer"></div>
     <div class="crop" id="attUnit_hydronaut"></div>
     <div class="crop" id="attUnit_leviathan"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_submarine"></div>
+    <div class="crop" id="attUnit_skimmer"></div>
+    <div class="crop" id="attUnit_kraken"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="attUnit_submarineSub"></div>
+    <div class="crop" id="attUnit_skimmerSub"></div>
+    <div class="crop" id="attUnit_krakenSub"></div>
   </div>
 </div>
 
@@ -946,6 +987,16 @@ window.addEventListener('orientationchange', updateOrientation, false);
     <div class="crop" id="defUnit_hydronaut"></div>
     <div class="crop" id="defUnit_leviathan"></div>
   </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_submarine"></div>
+    <div class="crop" id="defUnit_skimmer"></div>
+    <div class="crop" id="defUnit_kraken"></div>
+  </div>
+  <div class="wrapper">
+    <div class="crop" id="defUnit_submarineSub"></div>
+    <div class="crop" id="defUnit_skimmerSub"></div>
+    <div class="crop" id="defUnit_krakenSub"></div>
+  </div>
 </div>
 
 
@@ -954,14 +1005,14 @@ window.addEventListener('orientationchange', updateOrientation, false);
 <div class="results" id="resultDiv"  onclick="document.getElementById('resultDiv').style.zIndex=-1">
 
 <table border class="results">
-<tr><th></th><th id="t11">Attacker</th><th id="t12">Defender</th></tr>
+<tr><th><a href="about.html">-&gt; About</a></th><th id="t11">Attacker</th><th id="t12">Defender</th></tr>
 <tr><th>Cost</th><td id="t21"></td><td id="t22"></td></tr>
-<tr><th>Inflicted Damage</th><td id="t31"></td><td id="t32"></td></tr>
-<tr><th>Remaining Health</th><td id="t41"></td><td id="t42"></td></tr>
-<tr><th>Credit Loss</th><td id="t51"></td><td id="t52"></td></tr>
-<tr><th>Attack / Defense</th><td id="t61"></td><td id="t62"></td></tr>
-<tr><th>Terrain Effect</th><td id="t71"></td><td id="t72"></td></tr>
-<tr><th>Armor Piercing</th><td id="t81"></td><td id="t82"></td></tr>
+<tr><th>Inflicted&nbsp;Damage</th><td id="t31"></td><td id="t32"></td></tr>
+<tr><th>Remaining&nbsp;Health</th><td id="t41"></td><td id="t42"></td></tr>
+<tr><th>Credit&nbsp;Loss</th><td id="t51"></td><td id="t52"></td></tr>
+<tr><th>Attack&nbsp;/&nbsp;Defense</th><td id="t61"></td><td id="t62"></td></tr>
+<tr><th>Terrain&nbsp;Effect</th><td id="t71"></td><td id="t72"></td></tr>
+<tr><th>Armor&nbsp;Piercing</th><td id="t81"></td><td id="t82"></td></tr>
 <tr><th>p-Value</th><td id="t91"></td><td id="t92"></td></tr>
 </table>
 </div>

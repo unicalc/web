@@ -1,6 +1,6 @@
 function importData(data) {
 	for (key in data) this[key] = data[key];
-	this.image = (this.name.toLowerCase() + '.png').replace('-', '_').replace(' ', '_');
+	this.image = (this.name.toLowerCase() + '.png').replace(" (under water)", "_sub").replace('-', '_').replace(' ', '_');
 }
 
 
@@ -221,6 +221,27 @@ fuze = new amphibianUnit(
 	maxRange: 2,
 	defense: 2});
 
+submarine = new aquaUnit(
+	{name: 'Submarine',
+	cost: 350,
+	mobility: 9,
+	vision: 3,
+	attack: { GL: 5, GH: 5, AIR: 5, AQUA: 5, AMPHI: 4},
+	armorPiercing: { GL: 0.1, GH: 0.3, AIR: 0.2, AQUA: 0.5, AMPHI: 0.1},
+	maxRange: 3,
+	defense: 2,
+	repair: 1});
+
+submarine_sub = new aquaUnit(
+	{name: 'Submarine (under water)',
+	cost: 350,
+	mobility: 9,
+	vision: 2,
+	attack: { GL: 5, GH: 5, AIR: 5, AQUA: 5, AMPHI: 4},
+	armorPiercing: { GL: 0.1, GH: 0.3, AIR: 0.2, AQUA: 0.5, AMPHI: 0.1},
+	maxRange: 2,
+	defense: 0,
+	repair: 1});
 mecha = new groundLightUnit(
 	{name: 'Mecha',
 	cost: 100,
@@ -322,6 +343,30 @@ mantisse = new amphibianUnit(
 	armorPiercing: { GL: 0.25, GH: 0, AIR: 0.1, AQUA: 0.2, AMPHI: 0},
 	maxRange: 2,
 	defense: 4});
+
+skimmer = new aquaUnit(
+	{name: 'Skimmer',
+	cost: 400,
+	mobility: 10,
+	vision: 4,
+	attack: { GL: 5, GH: 5, AIR: 3, AQUA: 5, AMPHI: 5},
+	armorPiercing: { GL: 0.15, GH: 0.3, AIR: 0, AQUA: 0.4, AMPHI: 0.15},
+	maxRange: 3,
+	defense: 3,
+	repair: 1});
+skimmer_sub = new aquaUnit(
+	{name: 'Skimmer (under water)',
+	cost: 400,
+	mobility: 10,
+	vision: 3,
+	attack: { GL: 0, GH: 0, AIR: 0, AQUA: 5, AMPHI: 5},
+	armorPiercing: { GL: 0, GH: 0, AIR: 0, AQUA: 0.4, AMPHI: 0.15},
+	maxRange: 2,
+	defense: 3,
+	repair: 1});
+
+
+
 
 underling = new groundLightUnit(
 	{name: 'Underling',
@@ -427,11 +472,36 @@ salamander = new amphibianUnit(
 	specialAttackRange: 1,
 	specialAttackRecharge: 0});
 
-sapiens = [marine, mecha2, engineer, marauder, bopper, tank, helicopter, battery, destroyer, fuze];
+kraken = new aquaUnit(
+	{name: 'Kraken',
+	cost: 300,
+	mobility: 9,
+	vision: 3,
+	attack: { GL: 6, GH: 6, AIR: 0, AQUA: 6, AMPHI: 6},
+	armorPiercing: { GL: 0.15, GH: 0.3, AIR: 0, AQUA: 0.6, AMPHI: 0.15},
+	maxRange: 1,
+	defense: 8,
+	repair: 2});
+
+kraken_sub = new aquaUnit(
+	{name: 'Kraken (under water)',
+	cost: 300,
+	mobility: 9,
+	vision: 2,
+	attack: { GL: 0, GH: 0, AIR: 0, AQUA: 6, AMPHI: 6},
+	armorPiercing: { GL: 0, GH: 0, AIR: 0, AQUA: 0.6, AMPHI: 0.15},
+	maxRange: 1,
+	defense: 8,
+	repair: 2});
+
+
+
+
+sapiens = [marine, mecha2, engineer, marauder, bopper, tank, helicopter, battery, destroyer, fuze, submarine, submarine_sub];
 for (u in sapiens) sapiens[u].race='sapiens';
-titans = [mecha, cyberUnderling, assimilator, speeder, guardian, plasmaTank, eclipse, walker, hydronaut, mantisse];
+titans = [mecha, cyberUnderling, assimilator, speeder, guardian, plasmaTank, eclipse, walker, hydronaut, mantisse, skimmer, skimmer_sub];
 for (u in titans) titans[u].race='titans';
-khraleans = [underling, infectedMarine, infector, borfly, swarmer, garuda, pinzer, wyrm, leviathan, salamander];
+khraleans = [underling, infectedMarine, infector, borfly, swarmer, garuda, pinzer, wyrm, leviathan, salamander, kraken, kraken_sub];
 for (u in khraleans) khraleans[u].race='khraleans';
 						 
 
@@ -447,6 +517,8 @@ RuleSet = {
 		battery: battery,
 		destroyer: destroyer,
 		fuze: fuze,
+		submarine: submarine,
+		submarineSub: submarine_sub,
 		mecha: mecha,
 		cyberUnderling: cyberUnderling,
 		assimilator: assimilator,
@@ -457,6 +529,8 @@ RuleSet = {
 		walker: walker,
 		hydronaut: hydronaut,
 		mantisse: mantisse,
+		skimmer: skimmer,
+		skimmerSub: skimmer_sub,
 		underling: underling,
 		infectedMarine: infectedMarine,
 		infector: infector,
@@ -466,6 +540,8 @@ RuleSet = {
 		pinzer: pinzer,
 		wyrm: wyrm,
 		leviathan: leviathan,
-		salamander: salamander
+		salamander: salamander,
+		kraken: kraken,
+		krakenSub: kraken_sub
 	}
 }
