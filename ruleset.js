@@ -484,7 +484,8 @@ kraken = new aquaUnit(
 	armorPiercing: { GL: 0.15, GH: 0.3, AIR: 0, AQUA: 0.6, AMPHI: 0.15},
 	maxRange: 1,
 	defense: 8,
-	repair: 2});
+	repair: 2,
+	canPopup: true});
 
 kraken_sub = new aquaUnit(
 	{name: 'Kraken (under water)',
