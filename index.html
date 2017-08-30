@@ -701,6 +701,14 @@ function updateChart() {
   var defender = model.units[1];
   var attTerrainValues = attacker.rule.terrain[battle.attTerrain];
   var defTerrainValues = defender.rule.terrain[battle.defTerrain];
+  
+  var aa = attacker.rule.attack[defender.rule.class];
+  var da = defender.rule.attack[attacker.rule.class];
+  
+  if (attacker.rule.name.endsWith(" (under water)") && !defender.rule.name.endsWith(" (under water)")) {
+	aa += attacker.rule.surfacedAttackBonus;  
+	da = 0;
+  }
 
 
   document.getElementById('t11').innerHTML=attacker.rule.name + ' (' + attacker.rule.class + ')';
@@ -713,8 +721,8 @@ function updateChart() {
   document.getElementById('t42').innerHTML=defender.health;
   document.getElementById('t51').innerHTML=Math.round(-attacker.rule.cost*battle.attLoss)/10;
   document.getElementById('t52').innerHTML=Math.round(-defender.rule.cost*battle.defLoss)/10;
-  document.getElementById('t61').innerHTML=attacker.rule.attack[defender.rule.class] + '/' + attacker.rule.defense;
-  document.getElementById('t62').innerHTML=defender.rule.attack[attacker.rule.class] + '/' + defender.rule.defense;
+  document.getElementById('t61').innerHTML=aa + '/' + attacker.rule.defense;
+  document.getElementById('t62').innerHTML=da + '/' + defender.rule.defense;
   document.getElementById('t71').innerHTML='A: ' + (attTerrainValues[1] > 0 ? '+':'') +  attTerrainValues[1] + '  D: ' + (attTerrainValues[2] > 0 ? '+':'') +  attTerrainValues[2];
   document.getElementById('t72').innerHTML='A: ' + (defTerrainValues[1] > 0 ? '+':'') +  defTerrainValues[1] + '  D: ' + (defTerrainValues[2] > 0 ? '+':'') +  defTerrainValues[2];
   document.getElementById('t81').innerHTML=Math.round(1000*attacker.rule.armorPiercing[defender.rule.class])/10 + '%';

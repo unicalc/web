@@ -16,6 +16,7 @@ function basicUnit(data) {
 	this.repair = 1;
 	this.repairBonus = 0;
 	this.actions = 1;
+	this.surfacedAttackBonus = 0;
 }
 
 function groundLightUnit(data) {
@@ -239,6 +240,7 @@ submarine_sub = new aquaUnit(
 	vision: 2,
 	attack: { GL: 5, GH: 5, AIR: 5, AQUA: 5, AMPHI: 4},
 	armorPiercing: { GL: 0.1, GH: 0.3, AIR: 0.2, AQUA: 0.5, AMPHI: 0.1},
+	surfacedAttackBonus: -2,
 	maxRange: 2,
 	defense: 0,
 	repair: 1});
@@ -361,6 +363,7 @@ skimmer_sub = new aquaUnit(
 	vision: 3,
 	attack: { GL: 0, GH: 0, AIR: 0, AQUA: 5, AMPHI: 5},
 	armorPiercing: { GL: 0, GH: 0, AIR: 0, AQUA: 0.4, AMPHI: 0.15},
+	surfacedAttackBonus: -2,
 	maxRange: 2,
 	defense: 3,
 	repair: 1});
@@ -490,6 +493,7 @@ kraken_sub = new aquaUnit(
 	vision: 2,
 	attack: { GL: 0, GH: 0, AIR: 0, AQUA: 6, AMPHI: 6},
 	armorPiercing: { GL: 0, GH: 0, AIR: 0, AQUA: 0.6, AMPHI: 0.15},
+	surfacedAttackBonus: -2,
 	maxRange: 1,
 	defense: 8,
 	repair: 2});
