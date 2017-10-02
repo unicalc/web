@@ -88,6 +88,8 @@ function processData() {
 		unit.bonusText = 'A: '+unit.rule.terrain[unit.terrain][1]+ ' D: '+unit.rule.terrain[unit.terrain][2];
 		
 		unit.levelText = ['', '&#65087;', '&#65085;', '???', '&#8593;', '&#65087;&#8593;', '&#65085;&#8593;'][unit.vet];
+		unit.realVet = unit.vet;
+		if (unit.vet > 3) unit.vet += unit.rule.popupBonus - 4;
 	}
 	
 	for (var i=0; i<model.battles.length; ++i) {

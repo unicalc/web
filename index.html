@@ -343,7 +343,7 @@ function selected_attUnit(div) {
   model.units[0].rule=rule;
 
   var div=document.getElementById('attUnbury');
-  if (rule.canPopup) {
+  if (rule.popupBonus) {
     div.style.display='block'
   } else {
     unbury = 0;
@@ -475,7 +475,7 @@ function selected_attGang(div) {
 var unbury=0;
 function toggleUnbury() {
   var div=document.getElementById('attUnbury');
-  unbury = 4-unbury;
+  unbury = 1-unbury;
   div.style.backgroundColor=unbury ? "green" : "white";
   updateChart();
 }
@@ -680,13 +680,13 @@ function renderChart() {
 //renderChart();
 
 function updateChart() {
-  model.battles[0].attBonus = gangup +  unbury;
 
   var battle = model.battles[0];
   var attacker = model.units[0];
   var defender = model.units[1];
   var attTerrainValues = attacker.rule.terrain[battle.attTerrain];
   var defTerrainValues = defender.rule.terrain[battle.defTerrain];
+  battle.attBonus = gangup +  unbury * attacker.rule.popupBonus;
 
   battle.strikeBack = defender.rule.minRange <= attacker.rule.maxRange && defender.rule.maxRange >= attacker.rule.minRange;
 

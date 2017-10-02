@@ -167,7 +167,7 @@
 			var attBonus = 0;
 			var x = parseInt($$("attGangup").getValue());
 			attBonus += x;
-			var x = parseInt($$("attPopup").getValue())*4;
+			var x = parseInt($$("attPopup").getValue())*attacker.popupBonus;
 			attBonus += x;
 			model = {
 				units: [
@@ -226,7 +226,7 @@
                 onSelectChange:function (id) {
                 attackerId = id;
                 attacker = RuleSet.Unit[id];
-				if (attacker.canPopup) $$("attPopup").enable();
+				if (attacker.popupBonus) $$("attPopup").enable();
 				else {
 					$$("attPopup").disable();
 					$$("attPopup").setValue(0);
