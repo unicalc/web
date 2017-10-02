@@ -11,6 +11,7 @@ function basicUnit(data) {
 	this.canCapture = false;
 	this.cannotBeBuilt = false;
 	this.canPopup = false;
+	this.popupBonus = 0;
 	this.attackAfterMove = true;
 	this.moveAfterAttack = 0;
 	this.repair = 1;
@@ -228,7 +229,7 @@ submarine = new aquaUnit(
 	mobility: 9,
 	vision: 3,
 	attack: { GL: 5, GH: 5, AIR: 5, AQUA: 5, AMPHI: 4},
-	armorPiercing: { GL: 0.1, GH: 0.3, AIR: 0.2, AQUA: 0.5, AMPHI: 0.1},
+	armorPiercing: { GL: 0.1, GH: 0.3, AIR: 0.2, AQUA: 0.4, AMPHI: 0.1},
 	maxRange: 3,
 	defense: 2,
 	repair: 1});
@@ -239,7 +240,7 @@ submarine_sub = new aquaUnit(
 	mobility: 9,
 	vision: 2,
 	attack: { GL: 5, GH: 5, AIR: 5, AQUA: 5, AMPHI: 4},
-	armorPiercing: { GL: 0.1, GH: 0.3, AIR: 0.2, AQUA: 0.5, AMPHI: 0.1},
+	armorPiercing: { GL: 0.1, GH: 0.3, AIR: 0.2, AQUA: 0.4, AMPHI: 0.1},
 	surfacedAttackBonus: -2,
 	maxRange: 2,
 	defense: 0,
@@ -257,6 +258,7 @@ cyberUnderling = new groundLightUnit(
 	cost: 100,
 	cannotBeBuilt: true,
 	canPopup: true,
+	popupBonus: 4,
 	mobility: 10,
 	vision: 4,
 	attack: { GL: 7, GH: 4, AIR: 2, AQUA: 2, AMPHI: 7},
@@ -352,7 +354,7 @@ skimmer = new aquaUnit(
 	mobility: 10,
 	vision: 4,
 	attack: { GL: 5, GH: 5, AIR: 3, AQUA: 5, AMPHI: 5},
-	armorPiercing: { GL: 0.15, GH: 0.3, AIR: 0, AQUA: 0.4, AMPHI: 0.15},
+	armorPiercing: { GL: 0.15, GH: 0.3, AIR: 0, AQUA: 0.5, AMPHI: 0.15},
 	maxRange: 3,
 	defense: 3,
 	repair: 1});
@@ -362,7 +364,7 @@ skimmer_sub = new aquaUnit(
 	mobility: 10,
 	vision: 3,
 	attack: { GL: 0, GH: 0, AIR: 0, AQUA: 5, AMPHI: 5},
-	armorPiercing: { GL: 0, GH: 0, AIR: 0, AQUA: 0.4, AMPHI: 0.15},
+	armorPiercing: { GL: 0, GH: 0, AIR: 0, AQUA: 0.5, AMPHI: 0.15},
 	surfacedAttackBonus: -2,
 	maxRange: 2,
 	defense: 3,
@@ -378,7 +380,9 @@ underling = new groundLightUnit(
 	vision: 3,
 	attack: { GL: 6, GH: 3, AIR: 0, AQUA: 2, AMPHI: 6},
 	defense: 5,
-	canPopup: true});
+	canPopup: true,
+	popupBonus: 4
+	});
 	
 infectedMarine = new groundLightUnit(
 	{name: 'Infected Marine',
@@ -485,6 +489,7 @@ kraken = new aquaUnit(
 	maxRange: 1,
 	defense: 8,
 	repair: 2,
+	popupBonus: 1,
 	canPopup: true});
 
 kraken_sub = new aquaUnit(
