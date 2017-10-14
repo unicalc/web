@@ -74,6 +74,21 @@
 			$$('units_defender').parse(model.units);
 		
 		}
+		
+		function removeAllUnits() {
+			var table = $$('units');
+			model.units = [];
+			table.clearAll();
+			model.battles = [];
+			processData();
+			$$('battle').clearAll();
+			$$('battle').refresh();
+			table.refresh();
+			$$('battle').parse(model.battles);
+			$$('units_attacker').clearAll();
+			$$('units_defender').clearAll();
+		
+		}
 
 		function removeBattle() {
 			var table = $$('battle');
@@ -82,6 +97,15 @@
 			var index = model.battles.indexOf(table.getItem(sel));
 			if (index > -1) model.battles.splice(index, 1);
 			table.remove(sel);
+			processData();
+			table.refresh();
+			$$('units').refresh();
+		}
+		
+		function removeAllBattles() {
+			var table = $$('battle');
+			model.battles = [];
+			table.clearAll();
 			processData();
 			table.refresh();
 			$$('units').refresh();
@@ -187,6 +211,7 @@
 				{ view: 'toolbar', elements: [
 					{ view:'button', value:'+', popup: 'add_unit', width: 30 },
 					{ view:'button', value:'-', click:	removeUnit, width: 30 },
+					{ view:'button', value:'clear', click:	removeAllUnits, width: 50 },
 					{ template: 'Setup units for battle' }
 				]},
 				{ view: 'datatable', id: 'units', 
@@ -208,6 +233,7 @@
 				{view: 'toolbar', elements: [
 					{ view:'button', value:'+', popup: 'addBattle', width: 30 },
 					{ view:'button', value:'-', click:	removeBattle, width: 30 },
+					{ view:'button', value:'clear', click:	removeAllBattles, width: 50 },
 					{ template: 'Setup individual fights' }
 				]},
 				{ view: 'datatable', id: 'battle', 
