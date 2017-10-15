@@ -399,7 +399,7 @@ function selected_attUnit(div) {
     if (div.id == '') continue;
     var unit = div.id.split('_');
     if (unit[0] != 'defUnit') continue;
-    if (!rule.attack[RuleSet.Unit[unit[1]].class] || (!rule.name.endsWith(" (under water)") && RuleSet.Unit[unit[1]].name.endsWith(" (under water)"))  ) {
+    if (!rule.attack[RuleSet.Unit[unit[1]].class] /*|| (!rule.name.endsWith(" (under water)") && RuleSet.Unit[unit[1]].name.endsWith(" (under water)")) */ ) {
       
 	  div.style.backgroundColor = 'lightgray';
 	  if (slots.defUnit == div) {

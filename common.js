@@ -52,7 +52,7 @@ var model = {
 };
 
 function pvalue(attacker, attackerTerrain, attackerBonus, defender, defenderTerrain) {
-	if (!attacker.name.endsWith(" (under water)") && defender.name.endsWith(" (under water)")) return 0;
+	//if (!attacker.name.endsWith(" (under water)") && defender.name.endsWith(" (under water)")) return 0;
 	var Aa = attacker.attack[defender.class];
 	if (!Aa) return 0;
 	if (attacker.name.endsWith(" (under water)") && !defender.name.endsWith(" (under water)")) Aa += attacker.surfacedAttackBonus;
