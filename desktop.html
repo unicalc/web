@@ -58,6 +58,13 @@
 			attBonus += x;
 			var x = parseInt($$("attPopup").getValue())*attacker.resurfaceBonus;
 			attBonus += x;
+			
+			if ($$("attDive").getValue()) {
+				$$("attPopup").disable();
+				$$("attPopup").setValue(0);
+			} else if (attacker.resurfaceBonus) {
+				$$("attPopup").enable();
+			}
 /*			var attackerCopy = JSON.parse(JSON.stringify(attacker));
 			var defenderCopy = JSON.parse(JSON.stringify(defender));
 			if ($$("attDive").getValue()) {
