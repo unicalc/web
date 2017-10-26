@@ -3,8 +3,8 @@
     <head>
     <link rel="stylesheet" href="https://cdn.webix.com/edge/webix.css" type="text/css">
     <script src="https://cdn.webix.com/edge/webix.js" type="text/javascript"></script>
-    <script src="ruleset.js"></script>
-    <script src="common.js"></script>
+    <script src="rule.js"></script>
+    <script src="common2.js"></script>
     </head>
     <body>
     <a href="about.html">-&gt; About</a><br>
@@ -29,13 +29,17 @@
         var unitData= [{ id: "1", open:true, value:"Sapiens", data: []},
                 { id:"2", open:true, value: "Khraleans", data:[]},
                 { id:"3", open:true, value:"Titans", data:[]}];
-        unitData.sapiens = unitData[0];
-        unitData.khraleans = unitData[1];
-        unitData.titans = unitData[2];
+        unitData.SAPIENS = unitData[0];
+        unitData.KHRALEANS = unitData[1];
+        unitData.TITANS = unitData[2];
         for (var unit in RuleSet.Unit) {
             var rules=RuleSet.Unit[unit];
             unitData[rules.race].data.push({id: unit, value: rules.name, open: true});
         }
+        
+        unitData.SAPIENS.data.sort(function(a,b) { return RuleSet.Unit[a.id].cost - RuleSet.Unit[b.id].cost; });
+        unitData.KHRALEANS.data.sort(function(a,b) { return RuleSet.Unit[a.id].cost - RuleSet.Unit[b.id].cost; });
+        unitData.TITANS.data.sort(function(a,b) { return RuleSet.Unit[a.id].cost - RuleSet.Unit[b.id].cost; });
         
         
 		function updateTable() {
@@ -45,137 +49,41 @@
 			$$("defHealth").refresh();
 		
 			var table = $$('datatable');
-			
-			
 
-			
-			/*var attAtt = attacker.attack[defender.class];
-			var defAtt = defender.attack[attacker.class];
-			var attDef = attacker.defense;
-			var defDef = defender.defense;
-			
-			
-			var attTerrainValues = attacker.terrain[attackerTerrain];
-			var Aa = parseInt(attAtt);
-			var Ad = parseInt(attDef);
-			var Da = parseInt(defAtt);
-			var Dd = parseInt(defDef);
-			var attackerBonus = 0;
-			if (attTerrainValues) {
-				var attAttBonus = attTerrainValues[1];
-				var attDefBonus = attTerrainValues[2];
-				if (attAtt) {
-					Aa += attAttBonus;
-					if (attAttBonus > 0) attAtt = attAtt + "+" + attAttBonus;
-					else if (attAttBonus < 0) attAtt = attAtt + "" + attAttBonus;
-					var x = parseInt($$("attVeteran").getValue());
-					if (x) attAtt = attAtt + "+" + x;
-					Aa += x;
-					attackerBonus += x;
-					var x = parseInt($$("attGangup").getValue());
-					if (x) attAtt = attAtt + "+" + x;
-					Aa += x;
-					attackerBonus += x;
-					var x = parseInt($$("attPopup").getValue())*4;
-					if (x) attAtt = attAtt + "+" + x;
-					Aa += x;
-					attackerBonus += x;
-				}
-				if (attDef) {
-					Ad += attDefBonus;
-					if (attDefBonus > 0) attDef = attDef + "+" + attDefBonus;
-					else if (attDefBonus < 0) attDef = attDef + "" + attDefBonus;
-					var pierce = defender.armorPiercing ? defender.armorPiercing[attacker.class]:null;
-					if (pierce) {
-						if (attDefBonus) attDef = '(' + attDef + ')'
-						attDef += ' - '+Math.round(pierce * 100) + '%';
-						Ad *= (1-pierce);
-					}
-				}
-			} else attAtt = attDef = 'n/a';
-			var defTerrainValues = defender.terrain[defenderTerrain];
-			var defenderBonus = 0;
-			if (defTerrainValues) {
-				var defAttBonus = defTerrainValues[1];
-				var defDefBonus = defTerrainValues[2];
-				if (attacker.maxRange < defender.minRange || attacker.minRange > defender.maxRange) {
-					Da = 0;
-					defAtt = 'out of range';
-				} else
-				if (defAtt) {
-					Da += defAttBonus;
-					if (defAttBonus > 0) defAtt = defAtt + "+" + defAttBonus;
-					else if (defAttBonus < 0) defAtt = defAtt + "" + defAttBonus;
-					var x = parseInt($$("defVeteran").getValue());
-					if (x) defAtt = defAtt + "+" + x;
-					Da += x;
-					defenderBonus =+ x;
-				}
-				if (defDef) {
-					Dd += defDefBonus;
-					if (defDefBonus > 0) defDef = defDef + "+" + defDefBonus;
-					else if (defDefBonus < 0) defDef = defDef + "" + defDefBonus;
-					var pierce = attacker.armorPiercing ? attacker.armorPiercing[defender.class] : null;
-					if (pierce) {
-						if (defDefBonus) defDef = '(' + defDef + ')'
-						defDef += ' - '+Math.round(pierce * 100) + '%';
-						Dd *= (1-pierce);
-					}
-				}
-			} else defAtt = defDef = 'n/a';
-			
-			var p1 = Aa ? 0.5 + 0.05 * (Aa-Dd) : 0;
-			p1 = Math.min(Math.max(p1, 0), 1);
-			var p2 = Da ? 0.5 + 0.05 * (Da-Ad) : 0;
-			p2 = Math.min(Math.max(p2, 0), 1);
-			
-
-			damage_dataset = [];			
-			if (defenderTerrain != '') {
-				result1 = processAttack(attacker, attackerTerrain, Ah, attackerBonus, defender, defenderTerrain, Dh, 1);
-			
-				result2 = processAttack(defender, defenderTerrain, Dh, defenderBonus, attacker, attackerTerrain, Ah, 1);
-			}
-			var d1 = 0;
-			var d2 = 0;
-			var dmgLimit = Math.min(Ah, Dh);
-			var coll1=0;
-			var coll2=0;
-			for (var i = 0; i<=dmgLimit; ++i) {
-				var dmg1 = (chanceOfDamage(Ah, i, p1));
-				if (i == Dh) dmg1 = 1-coll1;
-				else if (i > Dh) dmg1 = 0;
-				else coll1 += dmg1;
-				d1 += (i * dmg1);
-				
-				var dmg2 = (chanceOfDamage(Dh, i, p2))*1;
-				if (i == Ah) dmg2 = 1-coll2;
-				else if (i > Ah) dmg2 = 0;
-				else coll2 += dmg2;
-				d2 += (i * dmg2);
-				damage_dataset.push({
-					att: Math.round(dmg1*1000)/10,
-					def: Math.round(dmg2*1000)/10, 
-					dmg: i })
-			}
-
-			d1 = Math.round(d1*10)/10;
-			d2 = Math.round(d2*10)/10;*/
 			if (!defenderTerrain) return;
 			var Ah = parseInt($$('attHealth').getValue());
 			var Dh = parseInt($$('defHealth').getValue());
 			var attBonus = 0;
 			var x = parseInt($$("attGangup").getValue());
 			attBonus += x;
-			var x = parseInt($$("attPopup").getValue())*attacker.popupBonus;
+			var x = parseInt($$("attPopup").getValue())*attacker.resurfaceBonus;
 			attBonus += x;
+/*			var attackerCopy = JSON.parse(JSON.stringify(attacker));
+			var defenderCopy = JSON.parse(JSON.stringify(defender));
+			if ($$("attDive").getValue()) {
+				if (! $$("defDive").getValue()) attBonus += attacker.attackFromUnderWaterBonus;
+				attackerCopy.defense = attacker.defenseUnder;
+				
+			} else {
+				if ($$("defDive").getValue()) attBonus += bonusVersusUnderWater;
+			}
+			if ($$("defDive").getValue()) {
+				if (! $$("attDive").getValue() && defender.attack[attacker.class])
+				defenderCopy.attack[attacker.class]	 += defender.attackFromUnderWaterBonus;
+				defenderCopy.defense = defender.defenseUnder;
+			} else {
+				if ($$("defDive").getValue() && defender.attack[attacker.class])
+				defenderCopy.attack[attacker.class]	 += defender.bonusVersusUnderWater;
+			}
+				console.log(defenderCopy.attack);
+*/			
 			model = {
 				units: [
 					{ id: 1, rule: attacker, initialHealth: Ah, terrain: attackerTerrain, vet: parseInt($$("attVeteran").getValue())},
 					{ id: 2, rule: defender, initialHealth: Dh, terrain: defenderTerrain, vet: parseInt($$("defVeteran").getValue())},
 				],
 				battles: [
-					{ attId: 1, defId: 2, attTerrain: attackerTerrain, defTerrain: defenderTerrain, attBonus: attBonus, strikeBack: true }
+					{ attId: 1, defId: 2, attTerrain: attackerTerrain, defTerrain: defenderTerrain, attBonus: attBonus, strikeBack: true, attUnder: $$("attDive").getValue(), defUnder: $$("defDive").getValue()  }
 				]
 			};
 
@@ -191,10 +99,13 @@
 					dmg: i })
 			}
 			
-			var attTerrainValues = attacker.terrain[attackerTerrain];
-			var defTerrainValues = defender.terrain[defenderTerrain];
+			var attTerrainValues = RuleSet.ClassData[attacker.class].data[attackerTerrain];
+			var defTerrainValues = RuleSet.ClassData[defender.class].data[defenderTerrain];
+			//var attTerrainValues = attacker.terrain[attackerTerrain];
+			//var defTerrainValues = defender.terrain[defenderTerrain];
 
             var obj = [
+					// CAUTION! when adding lines here, the editing part needs to be edited! 
 					{ prop: 'Unit', a: attacker.name, d: defender.name  },
 					{ prop: 'Value', a: attacker.cost, d: defender.cost  },
 					{ prop: 'Class', a: attacker.class, d: defender.class  },
@@ -208,9 +119,14 @@
 					 d: 
 						'A: ' + (defTerrainValues[1] > 0 ? '+':'') +  defTerrainValues[1] +
 						'  D: ' + (defTerrainValues[2] > 0 ? '+':'') +  defTerrainValues[2]},
+					// Everything below can be edited... don't change the order!
 					{ prop: 'Attack (w/o bonus)', a: attacker.attack[defender.class], d: defender.attack[attacker.class] },
 					{ prop: 'Armor Piercing', a: attacker.armorPiercing[defender.class], d: defender.armorPiercing[attacker.class] },
-					{ prop: 'Defense', a: attacker.defense, d: defender.defense  }
+					{ prop: 'Defense', a: attacker.defense, d: defender.defense  },
+					{ prop: 'Popup Bonus', a: attacker.resurfaceBonus, d: defender.resurfaceBonus  },
+					{ prop: 'Bonus vs. Underwater', a: attacker.bonusVersusUnderWater, d: defender.bonusVersusUnderWater  },
+					{ prop: 'Bonus from Underwater', a: attacker.attackFromUnderWaterBonus, d: defender.attackFromUnderWaterBonus  },
+					{ prop: 'Defense Underwater', a: attacker.defenseUnder, d: defender.defenseUnder  }
 				];
             table.clearAll();
             table.parse(obj);  
@@ -226,20 +142,28 @@
                 onSelectChange:function (id) {
                 attackerId = id;
                 attacker = RuleSet.Unit[id];
-				if (attacker.popupBonus) $$("attPopup").enable();
+				if (attacker.resurfaceBonus) $$("attPopup").enable();
 				else {
 					$$("attPopup").disable();
 					$$("attPopup").setValue(0);
 					}
+				if (attacker.class == 'AQUA' && attacker.maxRangeUnder)
+					$$("attDive").enable();
+				else
+					$$("attDive").disable();
+				
 				var t=$$("attackerTerrain");
 				if (t) {
 					var x = t.getSelectedId();
 					t.clearAll();
 					var d = terrainData.filter(function(value) {
-						return attacker.terrain[value.id]
+						return RuleSet.ClassData[attacker.class].data[value.id][0]<20;
+						//return attacker.terrain[value.id]
 					});
 					t.parse(d);
-					if (! attacker.terrain[x] ) x = d[0].id;
+					var z = RuleSet.ClassData[attacker.class].data[x];
+					if (!z || z[0]>20 ) x = d[0].id;
+					//if (! attacker.terrain[x] ) x = d[0].id;
 					t.select(x);
 					t.showItem(x);
 				}
@@ -267,15 +191,22 @@
                 onSelectChange:function (id) {
                 defenderId = id;
                 defender = RuleSet.Unit[id];;
+				if (defender.class == 'AQUA' && defender.maxRangeUnder)
+					$$("defDive").enable();
+				else
+					$$("defDive").disable();
 				var t=$$("defenderTerrain");
 				if (t) {
 					var x = t.getSelectedId();
 					t.clearAll();
 					var d = terrainData.filter(function(value) {
-						return defender.terrain[value.id]
+						return RuleSet.ClassData[defender.class].data[value.id][0]<20;
+						//return defender.terrain[value.id]
 					});
 					t.parse(d);
-					if (! defender.terrain[x] ) x = d[0].id;
+					var z = RuleSet.ClassData[defender.class].data[x];
+					if (!z || z[0]>20 ) x = d[0].id;
+					// if (! defender.terrain[x] ) x = d[0].id;
 					t.select(x);
 					t.showItem(x);
 				}
@@ -309,6 +240,7 @@
 				 {view:"radio", id: 'attVeteran', label: 'Veteran', value: '0', options:['0', "1", "2"]},
 				 {view:"radio", id: 'attGangup', label: 'Gangup', value: '0', options:['0', "1", "2", '3']},
 				 {view:"checkbox", id: 'attPopup', label: 'Unbury', value: 0},
+				 {view:"checkbox", id: 'attDive', label: 'Diving', value: 0},
 				selectAttackerTerrain]},
             {
 			rows: [
@@ -319,6 +251,7 @@
 				 {view:"radio", id: 'defVeteran', label: 'Veteran', value: '0', options:['0', "1", "2"]},
 				 { view:"label", label: ""},
 				 { view:"label", label: ""},
+				 {view:"checkbox", id: 'defDive', label: 'Diving', value: 0},
 				selectDefenderTerrain]},
 			{rows: [
 				{ template:"Result", type:"header" },
@@ -353,6 +286,18 @@
 									break;
 								case 10: // Defense
 									unit1.defense = parseInt(state.value);
+									break;
+								case 11:
+									unit1.resurfaceBonus = parseInt(state.value);
+									break;
+								case 12:
+									unit1.bonusVersusUnderWater = parseInt(state.value);
+									break;
+								case 13:
+									unit1.attackFromUnderWaterBonus = parseInt(state.value);
+									break;
+								case 14:
+									unit1.defenseUnder = parseInt(state.value);
 									break;
 							}
 							updateTable();
@@ -418,19 +363,21 @@
 			]}
 		]
     });        
-	$$('attacker').showItem('borfly');
-	$$('attacker').select('borfly');
-	$$('attackerTerrain').select('forest');
-	$$('defender').showItem('eclipse');
-	$$('defender').select('eclipse');
+	$$('attacker').showItem('Kraken');
+	$$('attacker').select('Kraken');
+	$$('attackerTerrain').select('water');
+	$$('defender').showItem('Eclipse');
+	$$('defender').select('Eclipse');
 	$$('defenderTerrain').select('base');
 	
 	$$("attHealth").attachEvent("onSliderDrag", updateTable);
 	$$("attVeteran").attachEvent("onChange", updateTable);
 	$$("attGangup").attachEvent("onChange", updateTable);
 	$$("attPopup").attachEvent("onChange", updateTable);
+	$$("attDive").attachEvent("onChange", updateTable);
 	$$("defHealth").attachEvent("onSliderDrag", updateTable);
 	$$("defVeteran").attachEvent("onChange", updateTable);
+	$$("defDive").attachEvent("onChange", updateTable);
 
         </script>
 
