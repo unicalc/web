@@ -2,8 +2,8 @@
 <head>
 <meta name="viewport" content="width=620" />
 <title>UniWar Damage Calculator mobile</title>
-<script src="ruleset.js"></script>
-<script src="common.js"></script>
+<script src="rule.js"></script>
+<script src="common2.js"></script>
 
 <style type="text/css">
 html,
@@ -343,14 +343,14 @@ function selected_attUnit(div) {
   model.units[0].rule=rule;
 
   var div=document.getElementById('attUnbury');
-  if (rule.popupBonus) {
+  if (rule.resurfaceBonus) {
     div.style.display='block'
   } else {
     unbury = 0;
     div.style.backgroundColor="white";
     div.style.display='none';
   }
-
+  
 
   var terraDivs = document.getElementsByClassName('terra');
   var firstValid = null;
@@ -360,8 +360,9 @@ function selected_attUnit(div) {
     if (div.id == '') continue;
     var terra=div.id.split('_');
     if (terra[0] != 'attTerrain') continue;
-    var terrainEffect = rule.terrain[terra[1]];
-    if (terrainEffect === undefined) {
+    //var terrainEffect = rule.terrain[terra[1]];
+    var terrainEffect = getTerrainData(rule, terra[1]);
+    if (!isTerrainAllowed(rule, terra[1])) {
       if (slots.attTerrain == div) needUpdate = true;
       div.style.display = 'none';
     } else {
@@ -485,6 +486,8 @@ function selected_defUnit(div) {
   console.log(div.getAttribute("unit"));
   var rule=RuleSet.Unit[div.getAttribute("unit")];
   model.units[1].rule=rule;
+  model.battles[0].defUnder = (div.getAttribute("dive") == "yes"); 
+
   var terraDivs = document.getElementsByClassName('terra');
   var firstValid = null;
   var needUpdate = false;
@@ -493,8 +496,9 @@ function selected_defUnit(div) {
     if (div.id == '') continue;
     var terra=div.id.split('_');
     if (terra[0] != 'defTerrain') continue;
-    var terrainEffect = rule.terrain[terra[1]];
-    if (terrainEffect === undefined) {
+    //var terrainEffect = rule.terrain[terra[1]];
+    var terrainEffect = getTerrainData(rule, terra[1]);;
+    if (!isTerrainAllowed(rule, terra[1])) {
       if (slots.defTerrain == div) needUpdate = true;
       div.style.display = 'none';
     } else {
@@ -567,8 +571,6 @@ function selected_defVet(div) {
 
 }
 
-
-
 function unitSel(div, slot) {
   if (slots[slot]) slots[slot].style.backgroundColor="white";
   slots[slot]=div;
@@ -576,7 +578,6 @@ function unitSel(div, slot) {
   var sel = "selected_"+slot;
   if (window[sel]) window[sel](div);
 }
-
 
 function renderChart() {
   var canvas = document.getElementById("canvas");
@@ -594,7 +595,6 @@ function renderChart() {
   ctx.fillStyle = lingrad;
   ctx.fillRect(margin.left, margin.top, xMax - margin.left, yMax - margin.top);
   ctx.fillStyle = 'black';
-
 
   var len = data1.length;
   if (data2.length>data1.length) len = data2.length;
@@ -684,9 +684,12 @@ function updateChart() {
   var battle = model.battles[0];
   var attacker = model.units[0];
   var defender = model.units[1];
-  var attTerrainValues = attacker.rule.terrain[battle.attTerrain];
-  var defTerrainValues = defender.rule.terrain[battle.defTerrain];
-  battle.attBonus = gangup +  unbury * attacker.rule.popupBonus;
+//  var attTerrainValues = attacker.rule.terrain[battle.attTerrain];
+//  var defTerrainValues = defender.rule.terrain[battle.defTerrain];
+  var attTerrainValues = getTerrainData(attacker.rule, battle.attTerrain);
+  var defTerrainValues = getTerrainData(defender.rule, battle.defTerrain);
+
+  battle.attBonus = gangup +  unbury * attacker.rule.resurfaceBonus;
 
   battle.strikeBack = defender.rule.minRange <= attacker.rule.maxRange && defender.rule.maxRange >= attacker.rule.minRange;
 
@@ -694,23 +697,10 @@ function updateChart() {
   data1=model.battles[0].attackerDamage;
   data2=model.battles[0].defenderDamage;
   renderChart();
-
-
-  var battle = model.battles[0];
-  var attacker = model.units[0];
-  var defender = model.units[1];
-  var attTerrainValues = attacker.rule.terrain[battle.attTerrain];
-  var defTerrainValues = defender.rule.terrain[battle.defTerrain];
-  
+	
   var aa = attacker.rule.attack[defender.rule.class];
   var da = defender.rule.attack[attacker.rule.class];
   
-  if (attacker.rule.name.endsWith(" (under water)") && !defender.rule.name.endsWith(" (under water)")) {
-	aa += attacker.rule.surfacedAttackBonus;  
-	da = 0;
-  }
-
-
   document.getElementById('t11').innerHTML=attacker.rule.name + ' (' + attacker.rule.class + ')';
   document.getElementById('t12').innerHTML=defender.rule.name + ' (' + defender.rule.class + ')';
   document.getElementById('t21').innerHTML=attacker.rule.cost;
@@ -740,7 +730,9 @@ function init() {
     var div=unitDivs[i];
     if (div.id == '') continue;
     var unit=div.id.split('_');
-    div.innerHTML='<img src="assets/units/' + RuleSet.Unit[unit[1]].image + '"/>';
+    var image=RuleSet.Unit[unit[1]].image;
+    if (div.getAttribute("dive") == "yes") image = image.replace('.png', '_sub.png');
+	div.innerHTML='<img src="assets/units/' + image + '"/>';
     div.onclick=new Function('unitSel(this, "'+unit[0]+'")');
     div.setAttribute('unit', unit[1]);
   }
@@ -755,13 +747,13 @@ function init() {
     div.setAttribute('terrain', terra[1]);
   }
 
-  unitSel(document.getElementById('attUnit_marine'), 'attUnit');
+  unitSel(document.getElementById('attUnit_Marine'), 'attUnit');
+console.log("foo");
   unitSel(document.getElementById('attHealth_10'), 'attHealth');
   unitSel(document.getElementById('attTerrain_plain'), 'attTerrain');
   unitSel(document.getElementById('attVet_0'), 'attVet');
   unitSel(document.getElementById('attGang_0'), 'attGang');
-
-  unitSel(document.getElementById('defUnit_mecha'), 'defUnit');
+  unitSel(document.getElementById('defUnit_Mecha'), 'defUnit');
   unitSel(document.getElementById('defHealth_10'), 'defHealth');
   unitSel(document.getElementById('defTerrain_base'), 'defTerrain');
   unitSel(document.getElementById('defVet_0'), 'defVet');
@@ -796,64 +788,64 @@ window.addEventListener('orientationchange', updateOrientation, false);
 <div class="defTitle">Defender</div>
 <div class="units">
   <div class="wrapper">
-    <div class="crop" id="attUnit_marine"></div>
-    <div class="crop" id="attUnit_mecha"></div>
-    <div class="crop" id="attUnit_underling"></div>
+    <div class="crop" id="attUnit_Marine"></div>
+    <div class="crop" id="attUnit_Mecha"></div>
+    <div class="crop" id="attUnit_Underling"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_mecha2"></div>
-    <div class="crop" id="attUnit_cyberUnderling"></div>
-    <div class="crop" id="attUnit_infectedMarine"></div>
+    <div class="crop" id="attUnit_Mecha II"></div>
+    <div class="crop" id="attUnit_Cyber Underling"></div>
+    <div class="crop" id="attUnit_Infected Marine"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_engineer"></div>
-    <div class="crop" id="attUnit_assimilator"></div>
-    <div class="crop" id="attUnit_infector"></div>
+    <div class="crop" id="attUnit_Engineer"></div>
+    <div class="crop" id="attUnit_Assimilator"></div>
+    <div class="crop" id="attUnit_Infector"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_fuze"></div>
-    <div class="crop" id="attUnit_mantisse"></div>
-    <div class="crop" id="attUnit_salamander"></div>
+    <div class="crop" id="attUnit_Fuze"></div>
+    <div class="crop" id="attUnit_Mantisse"></div>
+    <div class="crop" id="attUnit_Salamander"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_bopper"></div>
-    <div class="crop" id="attUnit_guardian"></div>
-    <div class="crop" id="attUnit_borfly"></div>
+    <div class="crop" id="attUnit_Bopper"></div>
+    <div class="crop" id="attUnit_Guardian"></div>
+    <div class="crop" id="attUnit_Borfly"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_marauder"></div>
-    <div class="crop" id="attUnit_speeder"></div>
-    <div class="crop" id="attUnit_swarmer"></div>
+    <div class="crop" id="attUnit_Marauder"></div>
+    <div class="crop" id="attUnit_Speeder"></div>
+    <div class="crop" id="attUnit_Swarmer"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_helicopter"></div>
-    <div class="crop" id="attUnit_eclipse"></div>
-    <div class="crop" id="attUnit_garuda"></div>
+    <div class="crop" id="attUnit_Helicopter"></div>
+    <div class="crop" id="attUnit_Eclipse"></div>
+    <div class="crop" id="attUnit_Garuda"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_tank"></div>
-    <div class="crop" id="attUnit_plasmaTank"></div>
-    <div class="crop" id="attUnit_pinzer"></div>
+    <div class="crop" id="attUnit_Tank"></div>
+    <div class="crop" id="attUnit_Plasma Tank"></div>
+    <div class="crop" id="attUnit_Pinzer"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_battery"></div>
-    <div class="crop" id="attUnit_walker"></div>
-    <div class="crop" id="attUnit_wyrm"></div>
+    <div class="crop" id="attUnit_Battery"></div>
+    <div class="crop" id="attUnit_Walker"></div>
+    <div class="crop" id="attUnit_Wyrm"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_destroyer"></div>
-    <div class="crop" id="attUnit_hydronaut"></div>
-    <div class="crop" id="attUnit_leviathan"></div>
+    <div class="crop" id="attUnit_Destroyer"></div>
+    <div class="crop" id="attUnit_Hydronaut"></div>
+    <div class="crop" id="attUnit_Leviathan"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_submarine"></div>
-    <div class="crop" id="attUnit_skimmer"></div>
-    <div class="crop" id="attUnit_kraken"></div>
+    <div class="crop" id="attUnit_Submarine"></div>
+    <div class="crop" id="attUnit_Skimmer"></div>
+    <div class="crop" id="attUnit_Kraken"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="attUnit_submarineSub"></div>
-    <div class="crop" id="attUnit_skimmerSub"></div>
-    <div class="crop" id="attUnit_krakenSub"></div>
+    <div class="crop" id="attUnit_Submarine" dive="yes"></div>
+    <div class="crop" id="attUnit_Skimmer" dive="yes"></div>
+    <div class="crop" id="attUnit_Kraken" dive="yes"></div>
   </div>
 </div>
 
@@ -946,64 +938,64 @@ window.addEventListener('orientationchange', updateOrientation, false);
 
 <div class="unitsDef">
   <div class="wrapper">
-    <div class="crop" id="defUnit_marine"></div>
-    <div class="crop" id="defUnit_mecha"></div>
-    <div class="crop" id="defUnit_underling"></div>
+    <div class="crop" id="defUnit_Marine"></div>
+    <div class="crop" id="defUnit_Mecha"></div>
+    <div class="crop" id="defUnit_Underling"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_mecha2"></div>
-    <div class="crop" id="defUnit_cyberUnderling"></div>
-    <div class="crop" id="defUnit_infectedMarine"></div>
+    <div class="crop" id="defUnit_Mecha II"></div>
+    <div class="crop" id="defUnit_Cyber Underling"></div>
+    <div class="crop" id="defUnit_Infected Marine"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_engineer"></div>
-    <div class="crop" id="defUnit_assimilator"></div>
-    <div class="crop" id="defUnit_infector"></div>
+    <div class="crop" id="defUnit_Engineer"></div>
+    <div class="crop" id="defUnit_Assimilator"></div>
+    <div class="crop" id="defUnit_Infector"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_fuze"></div>
-    <div class="crop" id="defUnit_mantisse"></div>
-    <div class="crop" id="defUnit_salamander"></div>
+    <div class="crop" id="defUnit_Fuze"></div>
+    <div class="crop" id="defUnit_Mantisse"></div>
+    <div class="crop" id="defUnit_Salamander"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_bopper"></div>
-    <div class="crop" id="defUnit_guardian"></div>
-    <div class="crop" id="defUnit_borfly"></div>
+    <div class="crop" id="defUnit_Bopper"></div>
+    <div class="crop" id="defUnit_Guardian"></div>
+    <div class="crop" id="defUnit_Borfly"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_marauder"></div>
-    <div class="crop" id="defUnit_speeder"></div>
-    <div class="crop" id="defUnit_swarmer"></div>
+    <div class="crop" id="defUnit_Marauder"></div>
+    <div class="crop" id="defUnit_Speeder"></div>
+    <div class="crop" id="defUnit_Swarmer"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_helicopter"></div>
-    <div class="crop" id="defUnit_eclipse"></div>
-    <div class="crop" id="defUnit_garuda"></div>
+    <div class="crop" id="defUnit_Helicopter"></div>
+    <div class="crop" id="defUnit_Eclipse"></div>
+    <div class="crop" id="defUnit_Garuda"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_tank"></div>
-    <div class="crop" id="defUnit_plasmaTank"></div>
-    <div class="crop" id="defUnit_pinzer"></div>
+    <div class="crop" id="defUnit_Tank"></div>
+    <div class="crop" id="defUnit_Plasma Tank"></div>
+    <div class="crop" id="defUnit_Pinzer"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_battery"></div>
-    <div class="crop" id="defUnit_walker"></div>
-    <div class="crop" id="defUnit_wyrm"></div>
+    <div class="crop" id="defUnit_Battery"></div>
+    <div class="crop" id="defUnit_Walker"></div>
+    <div class="crop" id="defUnit_Wyrm"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_destroyer"></div>
-    <div class="crop" id="defUnit_hydronaut"></div>
-    <div class="crop" id="defUnit_leviathan"></div>
+    <div class="crop" id="defUnit_Destroyer"></div>
+    <div class="crop" id="defUnit_Hydronaut"></div>
+    <div class="crop" id="defUnit_Leviathan"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_submarine"></div>
-    <div class="crop" id="defUnit_skimmer"></div>
-    <div class="crop" id="defUnit_kraken"></div>
+    <div class="crop" id="defUnit_Submarine"></div>
+    <div class="crop" id="defUnit_Skimmer"></div>
+    <div class="crop" id="defUnit_Kraken"></div>
   </div>
   <div class="wrapper">
-    <div class="crop" id="defUnit_submarineSub"></div>
-    <div class="crop" id="defUnit_skimmerSub"></div>
-    <div class="crop" id="defUnit_krakenSub"></div>
+    <div class="crop" id="defUnit_Submarine" dive="yes"></div>
+    <div class="crop" id="defUnit_Skimmer" dive="yes"></div>
+    <div class="crop" id="defUnit_Kraken" dive="yes"></div>
   </div>
 </div>
 

@@ -106,8 +106,8 @@
 					dmg: i })
 			}
 			
-			var attTerrainValues = RuleSet.ClassData[attacker.class].data[attackerTerrain];
-			var defTerrainValues = RuleSet.ClassData[defender.class].data[defenderTerrain];
+			var attTerrainValues = getTerrainData(attacker, attackerTerrain);
+			var defTerrainValues = getTerrainData(defender, defenderTerrain);
 			//var attTerrainValues = attacker.terrain[attackerTerrain];
 			//var defTerrainValues = defender.terrain[defenderTerrain];
 
@@ -164,13 +164,11 @@
 					var x = t.getSelectedId();
 					t.clearAll();
 					var d = terrainData.filter(function(value) {
-						return RuleSet.ClassData[attacker.class].data[value.id][0]<20;
+						return isTerrainAllowed(attacker, value.id);
 						//return attacker.terrain[value.id]
 					});
 					t.parse(d);
-					var z = RuleSet.ClassData[attacker.class].data[x];
-					if (!z || z[0]>20 ) x = d[0].id;
-					//if (! attacker.terrain[x] ) x = d[0].id;
+					if (!isTerrainAllowed(attacker, x) x = d[0].id;
 					t.select(x);
 					t.showItem(x);
 				}
@@ -207,13 +205,11 @@
 					var x = t.getSelectedId();
 					t.clearAll();
 					var d = terrainData.filter(function(value) {
-						return RuleSet.ClassData[defender.class].data[value.id][0]<20;
+						return isTerrainAllowed(defender, value.id);
 						//return defender.terrain[value.id]
 					});
 					t.parse(d);
-					var z = RuleSet.ClassData[defender.class].data[x];
-					if (!z || z[0]>20 ) x = d[0].id;
-					// if (! defender.terrain[x] ) x = d[0].id;
+					if (!isTerrainAllowed(defender, x) x = d[0].id;
 					t.select(x);
 					t.showItem(x);
 				}

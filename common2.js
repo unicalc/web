@@ -30,6 +30,20 @@ for (var i = 0; i<tList.length; ++i) terrainData.push({id: tList[i], value: capi
 RuleSet.Unit["Cyber Underling"].cost=100;
 RuleSet.Unit["Infected Marine"].cost=100;
 RuleSet.Unit["Mecha II"].cost=100;
+
+for (var unit in RuleSet.Unit) {
+	RuleSet.Unit[unit].image = (RuleSet.Unit[unit].name.toLowerCase() + '.png').replace(" (under water)", "_sub").replace('-', '_').replace(' ', '_').replace('ii', '2');
+}
+
+function getTerrainData(unit, terrain) {
+	return RuleSet.ClassData[unit.class].data[terrain];
+}
+
+function isTerrainAllowed(unit, terrain) {
+	var z = getTerrainData(unit, terrain);
+	return z && z[0]<20;
+}
+
 	
 function processAttack(pValue, attackerHealth, defenderHealth, probability) {
 	var result = [];
@@ -47,8 +61,8 @@ function processAttack(pValue, attackerHealth, defenderHealth, probability) {
 
 var model = {
 	units: [
-			{ id: 1, rule: RuleSet.Unit.marauder, initialHealth: 10, terrain: 'plain', vet: 1 },
-			{ id: 2, rule: RuleSet.Unit.mecha, initialHealth: 10, terrain: 'base', vet: 2},
+			{ id: 1, rule: RuleSet.Unit.Marauder, initialHealth: 10, terrain: 'plain', vet: 1 },
+			{ id: 2, rule: RuleSet.Unit.Mecha, initialHealth: 10, terrain: 'base', vet: 2},
 		],
 	battles: [
 			{ attId: 1, defId: 2, attTerrain: 'plain', defTerrain: 'base', attBonus: 0, strikeBack: true }
@@ -70,6 +84,7 @@ function pvalue(attacker, attackerTerrain, attackerBonus, defender, defenderTerr
 	//var attTerrainValues = attacker.terrain[attackerTerrain];
 	var attAttBonus = attTerrainValues[1] + attackerBonus;
 	Aa += attAttBonus;
+	console.log(attackerBonus);
 	var Dd = defUnder ? defender.defenseUnder : defender.defense;
 	var defTerrainValues = RuleSet.ClassData[defender.class].data[defenderTerrain];
 	//var defTerrainValues = defender.terrain[defenderTerrain];
