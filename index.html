@@ -344,7 +344,7 @@ function selected_attUnit(div) {
   model.battles[0].attUnder = (div.getAttribute("dive") == "yes"); 
 
   var div=document.getElementById('attUnbury');
-  if (rule.resurfaceBonus) {
+  if (rule.resurfaceBonus && !model.battles[0].attUnder	) {
     div.style.display='block'
   } else {
     unbury = 0;
@@ -367,7 +367,7 @@ function selected_attUnit(div) {
       if (slots.attTerrain == div) needUpdate = true;
       div.style.display = 'none';
     } else {
-      if (!firstValid) firstValid = div;
+      if (!firstValid && terrainEffect[1]==0 && terrainEffect[2]==0	) firstValid = div;
       div.style.display = 'block';
       if (terrainEffect[1] >= 0) {
 		div.children[0].innerHTML='+'+terrainEffect[1];
@@ -503,7 +503,7 @@ function selected_defUnit(div) {
       if (slots.defTerrain == div) needUpdate = true;
       div.style.display = 'none';
     } else {
-      if (!firstValid) firstValid = div;
+      if (!firstValid && terrainEffect[1]==0 && terrainEffect[2]==0	) firstValid = div;
       div.style.display = 'block';
       if (terrainEffect[1] >= 0) {
 		div.children[0].innerHTML='+'+terrainEffect[1];
