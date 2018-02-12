@@ -1,3 +1,4 @@
+var NUMBEROFROLLS=12;
 if(typeof webix !== 'undefined')webix.Touch.disable();
 
 function capitalize(s) {
@@ -17,9 +18,9 @@ function prob(n,k,p) { return binomial(n,k)*Math.pow(p,k)*Math.pow(1-p, n-k);}
 
 function chanceOfDamage(attackerHealth, damage, p) {
 	if (damage > attackerHealth) return 0;
-	if (damage == attackerHealth) return prob(6*attackerHealth,6*damage,p);
+	if (damage == attackerHealth) return prob(NUMBEROFROLLS*attackerHealth,NUMBEROFROLLS*damage,p);
 	var result = 0;
-	for (var i=0; i<6; ++i) result+=prob(6*attackerHealth,i+6*damage,p);
+	for (var i=0; i<NUMBEROFROLLS; ++i) result+=prob(NUMBEROFROLLS*attackerHealth,i+NUMBEROFROLLS*damage,p);
 	return result;
 }		
 
