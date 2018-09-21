@@ -7,11 +7,11 @@ function capitalize(s) {
 };
 
 // binomial coefficient "n over k"
-function binomial(n, k) {  
-	var coeff = 1;  
-	for (var x = n-k+1; x <= n; x++) coeff *= x;  
-	for (x = 1; x <= k; x++) coeff /= x;  
-	return coeff;  
+function binomial(n, k) {
+	var coeff = 1;
+	for (var x = n-k+1; x <= n; x++) coeff *= x;
+	for (x = 1; x <= k; x++) coeff /= x;
+	return coeff;
 }
 
 // returns the probability of k hits with n trials if each try has a chance of p to hit
@@ -23,7 +23,7 @@ function chanceOfDamage(attackerHealth, damage, p) {
 	var result = 0;
 	for (var i=0; i<NUMBEROFROLLS; ++i) result+=prob(NUMBEROFROLLS*attackerHealth,i+NUMBEROFROLLS*damage,p);
 	return result;
-}		
+}
 
 var terrainData = [];
 var tList = ["plain", "base", "city", "medical", "forest", "mountain", "desert", "swamp", "chasm", "road", "bridge", "harbor", "water", "reef", "ocean"];
@@ -46,7 +46,7 @@ function isTerrainAllowed(unit, terrain) {
 	return z && z[0]<20;
 }
 
-	
+
 function processAttack(pValue, attackerHealth, defenderHealth, probability) {
 	var result = [];
 	var dmgLimit = Math.min(attackerHealth, defenderHealth);
@@ -86,13 +86,13 @@ function pvalue(attacker, attackerTerrain, attackerBonus, defender, defenderTerr
 	//var attTerrainValues = attacker.terrain[attackerTerrain];
 	var attAttBonus = attTerrainValues[1] + attackerBonus;
 	Aa += attAttBonus;
-	console.log(attackerBonus);
+	//console.log(attackerBonus);
 	var Dd = defUnder ? defender.defenseUnder : defender.defense;
 	var defTerrainValues = RuleSet.ClassData[defender.class].data[defenderTerrain];
 	//var defTerrainValues = defender.terrain[defenderTerrain];
 	var defDefBonus = defTerrainValues[2];
 	Dd += defDefBonus;
-	
+
 	var pierce = attacker.armorPiercing[defender.class];
 	if (pierce) {
 		Dd *= 1 - pierce;
@@ -116,12 +116,12 @@ function processData() {
 		unit.healthString = unit.health;
 		unit.bonusText = 'A: '+RuleSet.ClassData[unit.rule.class].data[unit.terrain][1]+ ' D: '+RuleSet.ClassData[unit.rule.class].data[unit.terrain][2];
 		//unit.bonusText = 'A: '+unit.rule.terrain[unit.terrain][1]+ ' D: '+unit.rule.terrain[unit.terrain][2];
-		
+
 		unit.levelText = ['', '&#65087;', '&#65085;', '???', '&#8593;', '&#65087;&#8593;', '&#65085;&#8593;'][unit.vet];
 		unit.realVet = unit.vet;
 		if (unit.vet > 3) unit.vet += unit.rule.popupBonus - 4;
 	}
-	
+
 	for (var i=0; i<model.battles.length; ++i) {
 		var battle = model.battles[i];
 		var att;
@@ -140,7 +140,7 @@ function processData() {
 		battle.defImg = def.image;
 		battle.defUnit = def.unit;
 		battle.defHealth = def.health;
-		
+
 		battle.attackerDamage = [];
 		battle.defenderDamage = [];
 		for (var j=Math.min(att.initialHealth, def.initialHealth); j>=0; --j) {
@@ -152,11 +152,11 @@ function processData() {
 		for (var j=0; j<=att.initialHealth; ++j) attHp.push(0);
 		var defHp = [];
 		for (var j=0; j<=def.initialHealth; ++j) defHp.push(0);
-		
+
 		battle.p1 = pvalue(att.rule, battle.attTerrain, battle.attBonus + att.vet, def.rule, battle.defTerrain, battle.attUnder, battle.defUnder);
 		battle.p2 = (battle.strikeBack) ? pvalue(def.rule, battle.defTerrain, def.vet, att.rule, battle.attTerrain, battle.defUnder, battle.attUnder) : 0;
 
-		
+
 		for (var attH = 0; attH <= att.initialHealth; ++attH) {
 			for (var defH = 0; defH <= def.initialHealth; ++defH) {
 				var prob = att.healthProb[attH] * def.healthProb[defH];
@@ -189,6 +189,6 @@ function processData() {
 		battle.defLoss = Math.round(10*(def.health - defHOld))/10;
 		if (att.health < att.initialHealth) att.healthString = att.initialHealth + " -> " +  att.health;
 		if (def.health < def.initialHealth) def.healthString = def.initialHealth + " -> " +  def.health;
-		
+
 	}
 }

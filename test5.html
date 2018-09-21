@@ -1,0 +1,313 @@
+<html>
+<head>
+<title>Uniwar Unit Stats</title>
+<script src="rule.js"></script>
+<script src="common2.js"></script>
+
+<style type="text/css">
+input.red {
+  background-color: red;
+}
+
+input {
+    text-align: right;
+}
+
+div.balance {
+  position: absolute;
+  right: 0px;
+  top: 10px;
+  color: yellow;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+div.bar-red {
+  background-color: red;
+  opacity: 0.4,
+  height: 20px;
+  width: 40px;
+  top: 0px;
+  position: absolute;
+}
+div.bar-redx {
+  opacity: 0.4,
+  height: 20px;
+  width: 40px;
+  top: 0px;
+  position: absolute;
+background: repeating-linear-gradient(
+  45deg,
+  red,
+  red 5px,
+  white 3px,
+  white 8px
+);
+}
+
+div.bar-green {
+  opacity: 0.8;
+  background-color: green;
+  height: 20px;
+  width: 40px;
+  bottom: 0px;
+  position: absolute;
+}
+
+div img {
+  position: absolute;
+}
+
+div.chart {
+  padding: 0px;
+  margin: 0px;
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+
+
+td.chart {
+  padding: 0px;
+  margin: 0px;
+  position: relative;
+}
+
+.hidden {
+  display: none;
+}
+
+</style>
+</head>
+<body>
+  <table border>
+    <tr><th colspan="2">Attacker</th><th colspan="2">Defender</th><th colspan="2">Settings</th><th></th></tr>
+    <tr><th>Class</th><th>Race</th><th>Class</th><th>Race</th><th>Class</th><th>Race</th><th>Stats</th></tr>
+    <tr>
+      <td><input type="checkbox" checked onchange="toggle(this, 'att_GL')">GL</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'att_SAPIENS')">Sapien</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'def_GL')">GL</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'def_SAPIENS')">Sapien</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'stat_GL')">GL</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'stat_SAPIENS')">Sapien</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'dmgBar')">Damage Bars</td>
+    </tr><tr>
+      <td><input type="checkbox" checked onchange="toggle(this, 'att_GH')">GH</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'att_TITANS')">Titan</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'def_GH')">GH</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'def_TITANS')">Titan</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'stat_GH')">GH</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'stat_TITANS')">Titan</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'credBal')">Credit Balance</td>
+    </tr><tr>
+      <td><input type="checkbox" checked onchange="toggle(this, 'att_AIR')">Air</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'att_KHRALEANS')">Khralean</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'def_AIR')">Air</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'def_KHRALEANS')">Khralean</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'stat_AIR')">Air</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'stat_KHRALEANS')">Khralean</td>
+    </tr><tr>
+      <td><input type="checkbox" checked onchange="toggle(this, 'att_AQUA')">Aqua</td>
+      <td>&nbsp;</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'def_AQUA')">Aqua</td>
+      <td>&nbsp;</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'stat_AQUA')">Aqua</td>
+      <td>&nbsp;</td>
+    </tr><tr>
+      <td><input type="checkbox" checked onchange="toggle(this, 'att_AMPHI')">Amphi</td>
+      <td>&nbsp;</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'def_AMPHI')">Amphi</td>
+      <td>&nbsp;</td>
+      <td><input type="checkbox" checked onchange="toggle(this, 'stat_AMPHI')">Amphi</td>
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+
+  <table border id="resultsTable">
+  </table>
+
+  <table border id="statsTable">
+  </table>
+  <script type="text/javascript" charset="utf-8">
+    var units=['Mecha II', 'Marine', 'Bopper', 'Fuze', 'Marauder', 'Tank', 'Helicopter', 'Battery', 'Submarine','Destroyer',
+    'Infected Marine', 'Underling', 'Salamander', 'Pinzer', 'Borfly', 'Swarmer', 'Garuda', 'Wyrm', 'Kraken', 'Leviathan',
+    'Cyber Underling', 'Mecha', 'Guardian', 'Mantisse', 'Speeder', 'Eclipse', 'Plasma Tank', 'Walker', 'Skimmer', 'Hydronaut'];
+
+    function prepareResultsTable() {
+      var table=document.getElementById('resultsTable');
+      var row=table.insertRow();
+      var cell=row.insertCell();
+      units.forEach(unitid => {
+        var unit=RuleSet.Unit[unitid];
+        cell=row.insertCell();
+        cell.classList.add("chart");
+        var terrain=unit.class=="AQUA"?"water":"plain";
+        cell.innerHTML='<div class="chart"><img src="assets/terrain/'+terrain+'.png" height="40"><img src="assets/units/'+unit.image+'" height="40"></div>';
+        cell.classList.add("def_"+unit.class);
+        cell.classList.add("def_"+unit.race);
+      });
+      units.forEach(unitid => {
+        var unit=RuleSet.Unit[unitid];
+        row=table.insertRow();
+        row.classList.add("att_"+unit.class);
+        row.classList.add("att_"+unit.race);
+        cell=row.insertCell();
+        var terrain=unit.class=="AQUA"?"water":"plain";
+        cell.innerHTML='<div class="chart"><img src="assets/terrain/'+terrain+'.png" height="40"><img src="assets/units/'+unit.image+'" height="40"></div>';
+        units.forEach(defunitid => {
+          cell=row.insertCell();
+          cell.innerHTML='<div id="def'+unitid+defunitid+'" class="bar-red dmgBar"></div><div id="att'+unitid+defunitid+'" class="bar-green dmgBar"></div><div id="bal'+unitid+defunitid+'" class="balance credBal">100</div>'
+          cell.classList.add("chart");
+          cell.classList.add("def_"+RuleSet.Unit[defunitid].class);
+          cell.classList.add("def_"+RuleSet.Unit[defunitid].race);
+        });
+      });
+    }
+
+    function processStatsChange(element, unitid, aspect, aspect2) {
+      var origValue=element.getAttribute('origValue');
+      if (element.value=='') element.value=origValue;
+      if (aspect2) {
+		RuleSet.Unit[unitid][aspect][aspect2]=parseInt(element.value);
+	  } else {
+		RuleSet.Unit[unitid][aspect]=parseInt(element.value);
+	  }
+      element.className= (element.value != origValue) ? 'red':'';
+      console.log(aspect + (aspect2 ? '.'+aspect2 : '') + ' of ' + unitid + ' changed to ' +element.value);
+      updateCharts();
+    }
+
+    function prepareStatsTable() {
+      var table=document.getElementById('statsTable');
+      var row=table.insertRow();
+      var cell=row.insertCell();
+      cell.outerHTML='<th colspan="5"></th>';
+      var cell=row.insertCell();
+      cell.outerHTML='<th colspan="5">attack</th>';
+      var cell=row.insertCell();
+      cell.outerHTML='<th colspan="5">armor piercing</th>';
+	    row=table.insertRow();
+      var columnCount = 0;
+      ['', 'cost', 'def', 'min<br>Range', 'max<br>Range', 'GL', 'GH', 'air', 'aqua', 'amphi', 'GL', 'GH', 'air', 'aqua', 'amphi'].forEach(title => {
+	   var cell=row.insertCell();
+     columnCount++;
+	   cell.outerHTML='<th>'+title+'</th>'});
+
+     var race="SAPIENS";
+	  for (var i=0; i<units.length; ++i) {
+	    var unitid=units[i];
+	    var unit=RuleSet.Unit[unitid];
+      if (race != unit.race) {
+        race = unit.race;
+        row=table.insertRow();
+        col=row.insertCell();
+        col.outerHTML='<td colspan="'+columnCount+'"></td>';
+      }
+	    row=table.insertRow();
+      row.classList.add("stat_"+unit.class);
+      row.classList.add("stat_"+unit.race);
+	    cell=row.insertCell();
+	    cell.innerHTML='<img src="assets/units/'+unit.image+'" height="40">';
+
+	    ['cost', 'defense', 'minRange', 'maxRange'].forEach(aspect => {
+	      cell=row.insertCell();
+	      cell.innerHTML='<input value="'+unit[aspect]+'" origvalue="'+unit[aspect]+'" onchange="processStatsChange(this, \''+unitid+'\', \''+aspect+'\')" size="3">';
+        cell.title=unitid+" "+aspect+"\noriginal value: "+unit[aspect];
+		});
+	    ['GL', 'GH', 'AIR', 'AQUA', 'AMPHI'].forEach(aspect => {
+	      cell=row.insertCell();
+	      cell.innerHTML='<input value="'+unit.attack[aspect]+'" origvalue="'+unit.attack[aspect]+'" onchange="processStatsChange(this, \''+unitid+'\', \'attack\', \''+aspect+'\')" size="3">';
+        cell.title=unitid+" attack vs "+aspect+"\noriginal value: "+unit.attack[aspect];
+		});
+    ['GL', 'GH', 'AIR', 'AQUA', 'AMPHI'].forEach(aspect => {
+      cell=row.insertCell();
+      cell.innerHTML='<input value="'+unit.armorPiercing[aspect]*100+'" origvalue="'+unit.armorPiercing[aspect]*100+'" onchange="processStatsChange(this, \''+unitid+'\', \'armorPiercing100\', \''+aspect+'\')" size="3">%';
+      cell.title=unitid+" armor piercing vs "+aspect+"\noriginal value: "+unit.armorPiercing[aspect]*100+"%";
+  });
+
+	  }
+    }
+
+    function updateCharts() {
+      var battle = model.battles[0];
+      var att = model.units[0];
+      var def = model.units[1];
+      units.forEach(unitid => {
+        var unit=RuleSet.Unit[unitid];
+        //console.log("Processing attacker: "+unitid);
+        var attrule=RuleSet.Unit[unitid];
+        att.rule=attrule;
+        att.vet=0;
+        battle.attUnder = false;//(div.getAttribute("dive") == "yes");
+        battle.attTerrain = attrule.class=='AQUA'?'water':'plain';
+        battle.attBonus = 0;
+
+        units.forEach(defunitid => {
+          var defrule=RuleSet.Unit[defunitid];
+          def.rule=defrule;
+          def.vet=0;
+          if (attrule.attack[defrule.class]) {
+            battle.defTerrain = defrule.class=='AQUA'?'water':'plain';
+            battle.strikeBack = defrule.minRange <= attrule.maxRange && defrule.maxRange >= attrule.minRange;
+            processData();
+            //console.log("-- vs "+defunitid+": "+battle.attLoss+"/"+battle.defLoss);
+            var ele = document.getElementById("def"+unitid+defunitid);
+            ele.style.height=-4*battle.attLoss + "px";
+            if (attrule.minRange < defrule.minRange || attrule.maxRange > defrule.maxRange) {
+              ele.classList.remove("bar-red");
+              ele.classList.add("bar-redx");
+            }
+            var ele = document.getElementById("att"+unitid+defunitid);
+            ele.style.height=-4*battle.defLoss + "px";
+
+            var ele = document.getElementById("bal"+unitid+defunitid);
+            var diff=Math.round(att.rule.cost*battle.attLoss-def.rule.cost*battle.defLoss)/10;
+            ele.innerHTML=diff;
+            var efficiency;
+            if (diff > 0) {
+              efficiency = diff/def.rule.cost;
+              ele.style.color=getColor(0.5-efficiency/2);
+            } else {
+              efficiency = diff/att.rule.cost;
+              ele.style.color=getColor(0.5-efficiency/2);
+            }
+            ele.parentElement.title=unitid+" vs "+defunitid+"\nkill: "+ -battle.defLoss + " loses: " + -battle.attLoss
+            + "\ncredit efficiency: " + Math.round(efficiency*100)+"%";
+          } else {
+            var ele = document.getElementById("att"+unitid+defunitid);
+            ele.style.height="0px";
+            var ele = document.getElementById("def"+unitid+defunitid);
+            ele.style.height="0px";
+            var ele = document.getElementById("bal"+unitid+defunitid);
+            ele.innerHTML = "n/a";
+            ele.style.color="black";
+            ele.parentElement.title=unitid+" cannot attack "+defunitid;
+          }
+
+        //  cell=row.insertCell();
+        //  cell.outerHTML='<td class="chart"><div id="def'+unitid+defunitid+'" class="bar-red"></div><div id="att'+unitid+defunitid+'" class="bar-green"></div></td>'
+        });
+      });
+    }
+
+    function getColor(value){
+    //value from 0 to 1
+    var hue=((1-value)*120).toString(10);
+    return ["hsl(",hue,",100%,50%)"].join("");
+}
+
+    function toggle(element, className) {
+      var trs=document.getElementsByClassName(className);
+      for (var i=0;i<trs.length;++i) {
+        var tr = trs[i];
+        if (element.checked) tr.classList.remove("hidden");
+        else tr.classList.add("hidden");
+      }
+    }
+
+    prepareResultsTable();
+    prepareStatsTable();
+    updateCharts();
+  </script>
+</body>
+</html>
