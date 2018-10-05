@@ -83,7 +83,7 @@ function pvalue(attacker, attackerTerrain, attackerBonus, defender, defenderTerr
 		if (defUnder) Aa += attacker.bonusVersusUnderWater;
 	}
 	var attTerrainValues = RuleSet.ClassData[attacker.class].data[attackerTerrain];
-	//var attTerrainValues = attacker.terrain[attackerTerrain];
+	//var attTerrainValues = attacker.terrain[attackerTerrain];	
 	var attAttBonus = attTerrainValues[1] + attackerBonus;
 	Aa += attAttBonus;
 	//console.log(attackerBonus);
@@ -98,7 +98,7 @@ function pvalue(attacker, attackerTerrain, attackerBonus, defender, defenderTerr
 		Dd *= 1 - pierce;
 		Dd = Math.round(Dd);
 	}
-	var p1 = Aa ? 0.5 + 0.05 * (Aa-Dd) : 0;
+	var p1 = 0.5 + 0.05 * (Aa-Dd);
 	return Math.min(Math.max(p1, 0), 1);
 };
 
