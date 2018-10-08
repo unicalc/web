@@ -116,7 +116,7 @@
 					{ prop: 'Unit', a: attacker.name, d: defender.name  },
 					{ prop: 'Value', a: attacker.cost, d: defender.cost  },
 					{ prop: 'Class', a: attacker.class, d: defender.class  },
-					{ prop: 'p', a: Math.round(battle.p1*100)/100, d: Math.round(battle.p2*100)/100 },
+					{ prop: 'p', a: Math.round(battle.p1*10000)/10000, d: Math.round(battle.p2*10000)/10000 },
 					{ prop: 'Inflicted Damage', a: -battle.defLoss, d: -battle.attLoss },
 					{ prop: 'Remaining Health', a: Math.round((Ah+battle.attLoss)*10)/10, d: Math.round((Dh+battle.defLoss)*10)/10 },
 					{ prop: 'Credit loss', a: Math.round(-attacker.cost*battle.attLoss)/10, d: Math.round(-defender.cost*battle.defLoss)/10 },

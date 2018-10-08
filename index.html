@@ -733,8 +733,8 @@ function updateChart() {
   document.getElementById('t72').innerHTML='A: ' + (defTerrainValues[1] > 0 ? '+':'') +  defTerrainValues[1] + '  D: ' + (defTerrainValues[2] > 0 ? '+':'') +  defTerrainValues[2];
   document.getElementById('t81').innerHTML=Math.round(1000*attacker.rule.armorPiercing[defender.rule.class])/10 + '%';
   document.getElementById('t82').innerHTML=Math.round(1000*defender.rule.armorPiercing[attacker.rule.class])/10 + '%';
-  document.getElementById('t91').innerHTML=Math.round(battle.p1*100)/100;
-  document.getElementById('t92').innerHTML=Math.round(battle.p2*100)/100;
+  document.getElementById('t91').innerHTML=Math.round(battle.p1*10000)/10000;
+  document.getElementById('t92').innerHTML=Math.round(battle.p2*10000)/10000;
     
 }
 
