@@ -3,8 +3,8 @@
     <head>
     <link rel="stylesheet" href="https://cdn.webix.com/edge/webix.css" type="text/css">
     <script src="https://cdn.webix.com/edge/webix.js" type="text/javascript"></script>
-    <script src="ruleset.js"></script>
-    <script src="common.js"></script>
+    <script src="rule.js"></script>
+    <script src="common2.js"></script>
     <style>
         .unit {
             position: absolute;
@@ -37,11 +37,20 @@
     </head>
     <body>
         <script type="text/javascript" charset="utf-8">
+        RuleSet.Unit.SubmarineSub=JSON.parse(JSON.stringify(RuleSet.Unit.Submarine));
+        RuleSet.Unit.SubmarineSub.image='submarine_sub.png';
+        RuleSet.Unit.SubmarineSub.dive=1;
+        RuleSet.Unit.KrakenSub=JSON.parse(JSON.stringify(RuleSet.Unit.Kraken));
+        RuleSet.Unit.KrakenSub.image='kraken_sub.png';
+        RuleSet.Unit.KrakenSub.dive=1;
+        RuleSet.Unit.SkimmerSub=JSON.parse(JSON.stringify(RuleSet.Unit.Skimmer));
+        RuleSet.Unit.SkimmerSub.image='skimmer_sub.png';
+        RuleSet.Unit.SkimmerSub.dive=1;
 		
 		var model = {
 			units: [
-				{ id: 1, rule: RuleSet.Unit.underling, initialHealth: 10, terrain: 'base', vet: 0},
-				{ id: 2, rule: RuleSet.Unit.marauder, initialHealth: 10, terrain: 'plain', vet: 0},
+				{ id: 1, rule: RuleSet.Unit.Underling, initialHealth: 10, terrain: 'base', vet: 0},
+				{ id: 2, rule: RuleSet.Unit.Marauder, initialHealth: 10, terrain: 'plain', vet: 0},
     
 			],
 			battles: [
@@ -294,30 +303,30 @@
 						{id: 'select_sapien', view: 'dataview', height: 480, select: 'true', type: {height: 80, width: 80}, xCount: 2, scroll: false,
 						template: '<img src="assets/units/#image#">',
 						data: [
-							RuleSet.Unit.marine,	RuleSet.Unit.helicopter,
-							RuleSet.Unit.mecha2,	RuleSet.Unit.tank, 
-							RuleSet.Unit.engineer,	RuleSet.Unit.battery,
-							RuleSet.Unit.marauder,	RuleSet.Unit.destroyer,
-							RuleSet.Unit.bopper,	RuleSet.Unit.fuze,
-							RuleSet.Unit.submarine,	RuleSet.Unit.submarineSub]},
+							RuleSet.Unit.Marine,	RuleSet.Unit.Helicopter,
+							RuleSet.Unit["Mecha II"],	RuleSet.Unit.Tank, 
+							RuleSet.Unit.Engineer,	RuleSet.Unit.Battery,
+							RuleSet.Unit.Marauder,	RuleSet.Unit.Destroyer,
+							RuleSet.Unit.Bopper,	RuleSet.Unit.Fuze,
+							RuleSet.Unit.Submarine,	RuleSet.Unit.SubmarineSub]},
 						{id: 'select_khralean', view: 'dataview', height: 480, select: 'true', type: {height: 80, width: 80}, xCount: 2, scroll: false,
 						template: '<img src="assets/units/#image#">',
 						data: [
-							RuleSet.Unit.underling, 		RuleSet.Unit.garuda,
-							RuleSet.Unit.infectedMarine, 	RuleSet.Unit.pinzer, 
-							RuleSet.Unit.infector, 			RuleSet.Unit.wyrm, 
-							RuleSet.Unit.swarmer, 			RuleSet.Unit.leviathan,
-							RuleSet.Unit.borfly,			RuleSet.Unit.salamander,
-							RuleSet.Unit.kraken,			RuleSet.Unit.krakenSub]},
+							RuleSet.Unit.Underling, 		RuleSet.Unit.Garuda,
+							RuleSet.Unit['Infected Marine'], 	RuleSet.Unit.Pinzer, 
+							RuleSet.Unit.Infector, 			RuleSet.Unit.Wyrm, 
+							RuleSet.Unit.Swarmer, 			RuleSet.Unit.Leviathan,
+							RuleSet.Unit.Borfly,			RuleSet.Unit.Salamander,
+							RuleSet.Unit.Kraken,			RuleSet.Unit.KrakenSub]},
 						{id: 'select_titan', view: 'dataview', height: 480, select: 'true', type: {height: 80, width: 80}, xCount: 2, scroll: false,
 						template: '<img src="assets/units/#image#">',
 						data: [
-							RuleSet.Unit.mecha, 		RuleSet.Unit.eclipse,
-							RuleSet.Unit.cyberUnderling,RuleSet.Unit.plasmaTank, 
-							RuleSet.Unit.assimilator, 	RuleSet.Unit.walker, 
-							RuleSet.Unit.speeder, 		RuleSet.Unit.hydronaut,
-							RuleSet.Unit.guardian,		RuleSet.Unit.mantisse,
-							RuleSet.Unit.skimmer,		RuleSet.Unit.skimmerSub]},
+							RuleSet.Unit.Mecha, 		RuleSet.Unit.Eclipse,
+							RuleSet.Unit['Cyber Underling']	, RuleSet.Unit['Plasma Tank'], 
+							RuleSet.Unit.Assimilator, 	RuleSet.Unit.Walker, 
+							RuleSet.Unit.Speeder, 		RuleSet.Unit.Hydronaut,
+							RuleSet.Unit.Guardian,		RuleSet.Unit.Mantisse,
+							RuleSet.Unit.Skimmer,		RuleSet.Unit.SkimmerSub]}					
 					]},
 					{id: 'select_health', rows: [
 						{cols: [
@@ -358,7 +367,10 @@
 			selected_unit = $$('select_sapien').getSelectedItem();
 			var t=$$("select_terrain");
 			t.clearAll();
-			var d = terrainData.filter(function(value) {return selected_unit.terrain[value.id]});
+			var d = terrainData.filter(function(value) {
+				return isTerrainAllowed(selected_unit, value.id);
+				//return attacker.terrain[value.id]
+			});
 			t.parse(d);
 			$$('select_health').show()
 		});		
@@ -366,7 +378,10 @@
 			selected_unit = $$('select_khralean').getSelectedItem();
 			var t=$$("select_terrain");
 			t.clearAll();
-			var d = terrainData.filter(function(value) {return selected_unit.terrain[value.id]});
+			var d = terrainData.filter(function(value) {
+				return isTerrainAllowed(selected_unit, value.id);
+				//return attacker.terrain[value.id]
+			});
 			t.parse(d);
 			$$('select_health').show()
 		});		
@@ -374,13 +389,16 @@
 			selected_unit = $$('select_titan').getSelectedItem();
 			var t=$$("select_terrain");
 			t.clearAll();
-			var d = terrainData.filter(function(value) {return selected_unit.terrain[value.id]});
+			var d = terrainData.filter(function(value) {
+				return isTerrainAllowed(selected_unit, value.id);
+				//return attacker.terrain[value.id]
+			});
 			t.parse(d);
 			$$('select_health').show()
 		});		
 		$$('select_terrain').attachEvent('onAfterSelect', function(id){
 			selected_terrain = id;
-			finish();
+				finish();
 		});		
 		
 		webix.ui({
@@ -432,7 +450,9 @@
 			new_attacker = $$("units_attacker").getSelectedItem();
 			var t=$$("attacker_terrain");
 			t.clearAll();
-			var d = terrainData.filter(function(value) {return new_attacker.rule.terrain[value.id]});
+			var d = terrainData.filter(function(value) {
+				return isTerrainAllowed(new_attacker.rule, value.id);
+			});
 			t.parse(d);
 			var t=$$("units_defender");
 			t.clearAll();
@@ -461,7 +481,9 @@
 			var def = new_defender.rule;
             model.battles.push({ attId: $$("units_attacker").getSelectedItem().id, defId: new_defender.id, 
 				attTerrain: attackerTerrain, defTerrain: new_defender.terrain, attBonus: parseInt(gangup),
-				strikeBack: (att.minRange >= def.minRange && att.maxRange <= def.maxRange)});
+				strikeBack: (att.minRange >= def.minRange && att.maxRange <= def.maxRange),
+				defUnder: def.dive==1,
+				attUnder: att.dive==1});
             processData();
 			$$('units').refresh();
 			$$('battle').clearAll();
