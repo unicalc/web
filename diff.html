@@ -1,0 +1,36 @@
+<html>
+<script src="rule.js"></script>
+<script src="old/rule-138.js"></script>
+<body>
+<table border id="result"></table>
+
+
+<script language="javascript">
+
+var result = '<tr><th>Path</th><th>Old</th><th>New</th></tr>';
+function compare(current, old, path) {
+	for (var name in current) {
+	   var c = current[name];
+	   var o = old[name];
+	   if ( typeof c == 'object') {
+		 console.log('recursing '+path+name);
+		 compare(c, o, path+name+'/');
+		} else {
+			console.log('need to compare '+path+name+' '+c+' vs '+o);
+			if (c != o) result += '<tr><td>'+path+name+'</td><td>'+o+'</td><td>'+c+'</td></tr>';
+			
+		}
+	}
+
+	;
+}
+compare(RuleSet, RuleSet138, '/');
+
+
+console.log(result);
+document.getElementById("result").innerHTML=result;
+
+</script>
+
+</body>
+</html>
