@@ -99,6 +99,7 @@ function pvalue(attacker, attackerTerrain, attackerBonus, defender, defenderTerr
 		//Dd = Math.round(Dd);
 	}
 	var p1 = 0.5 + 0.05 * (Aa-Dd);
+	p1 = Math.trunc(100*p1)/100;
 	return Math.min(Math.max(p1, 0), 1);
 };
 
