@@ -98,8 +98,8 @@ function pvalue(attacker, attackerTerrain, attackerBonus, defender, defenderTerr
 		Dd *= 1 - pierce;
 		//Dd = Math.round(Dd);
 	}
-	var p1 = 0.5 + 0.05 * (Aa-Dd);
-	p1 = Math.trunc(100*p1)/100;
+	var p1 = 50 + 5 * (Aa-Dd);
+	p1 = Math.trunc(p1)/100;
 	return Math.min(Math.max(p1, 0), 1);
 };
 
